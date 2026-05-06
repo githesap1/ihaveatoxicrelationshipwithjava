@@ -7,6 +7,6 @@ build
 # Ignore Kotlin plugin data
 .kotlin
 
-# Compiled Java class files
-*.class
-bin/
+# Ignore compiled Java bytecode
+app/bin/
+

@@ -1,17 +1,16 @@
-// CSE 1242 - Introduction to Programming II - Term Project
-// Author(s): [Ad Soyad] - [Ogrenci No]
-//
-// Enemy.java
-// Abstract base class for all paranormal entities. Stores shared state (position,
-// velocity, radius, visual group) and delegates type-specific behavior to subclasses.
+// CSE 1242 - Term Project
+// Ogrenci: [Ad Soyad] - [Ogrenci No]
+// Enemy.java - tum paranormal varliklar icin soyut taban sinifi
 
 package org.example;
 
 import java.util.ArrayList;
+import java.util.Random;
 
 import javafx.scene.Group;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
+import javafx.scene.shape.Polygon;
 
 public abstract class Enemy {
     public static final int GHOST = 0;
@@ -56,7 +55,6 @@ public abstract class Enemy {
         this.radius = baseRadius;
     }
 
-    // updates the JavaFX group position and scale to match the logical state
     public void updatePosition() {
         double scale = radius / baseRadius;
         view.setLayoutX(x);
@@ -65,7 +63,7 @@ public abstract class Enemy {
         view.setScaleY(scale);
     }
 
-    // changes the enemy color to gray/white to indicate it is being vacuumed
+    // scanner icindeyken griye boyar
     public void inZone() {
         body.setFill(Color.rgb(230, 230, 230, 0.90));
         for (Circle detail : details) {
@@ -73,10 +71,8 @@ public abstract class Enemy {
         }
     }
 
-    // restores the enemy's original colors when it is not in the scanner
     public abstract void outOfZone();
 
-    // returns how many points the player gets for capturing this enemy
     public abstract int getScoreValue();
 
     public int getType() {
@@ -149,5 +145,91 @@ public abstract class Enemy {
 
     public void setRadius(double radius) {
         this.radius = radius;
+    }
+
+    // enemy olusturur, rastgele konuma yerlestirir
+    public static Enemy spawn(int type, double areaX, double areaY,
+                              double areaW, double areaH, Random random) {
+        double baseRadius, minSpeed, maxSpeed;
+        Color bodyColor;
+
+        switch (type) {
+            case GHOST:
+                baseRadius = 18; minSpeed = 70;  maxSpeed = 130;
+                bodyColor = Color.rgb(255, 255, 255, 0.80); break;
+            case RIPPER:
+                baseRadius = 16; minSpeed = 110; maxSpeed = 170;
+                bodyColor = Color.rgb(176, 85, 255, 0.88); break;
+            case WISP:
+                baseRadius = 24; minSpeed = 65;  maxSpeed = 120;
+                bodyColor = Color.rgb(130, 240, 255, 0.75); break;
+            default: throw new IllegalStateException("Unexpected enemy type");
+        }
+
+        double x = areaX + baseRadius + random.nextDouble() * (areaW - baseRadius * 2);
+        double y = areaY + baseRadius + random.nextDouble() * (areaH - baseRadius * 2);
+        double speed = minSpeed + random.nextDouble() * (maxSpeed - minSpeed);
+        double angle = random.nextDouble() * Math.PI * 2;
+
+        Group view = new Group();
+        Circle body = new Circle(0, 0, baseRadius);
+        body.setFill(bodyColor);
+        body.setStroke(Color.BLACK);
+
+        ArrayList<Circle> details = new ArrayList<>();
+        Polygon star = null;
+        Group revolvers = null;
+
+        if (type == GHOST) {
+            Circle eye1 = new Circle(-5, -4, 2.5, Color.BLACK);
+            Circle eye2 = new Circle(5, -4, 2.5, Color.BLACK);
+            details.add(eye1);
+            details.add(eye2);
+            view.getChildren().add(body);
+            view.getChildren().addAll(details);
+
+        } else if (type == RIPPER) {
+            body.setRadius(baseRadius * 0.5);
+            star = new Polygon();
+            for (int j = 0; j < 16; j++) {
+                double ang = (Math.PI / 8.0) * j - Math.PI / 2.0;
+                double r = (j % 2 == 0) ? baseRadius : baseRadius * 0.5;
+                star.getPoints().addAll(Math.cos(ang) * r, Math.sin(ang) * r);
+            }
+            star.setFill(bodyColor);
+            star.setStroke(Color.BLACK);
+            Circle eye1 = new Circle(-4, -3, 3, Color.BLACK);
+            Circle eye2 = new Circle(4, -3, 3, Color.BLACK);
+            details.add(eye1);
+            details.add(eye2);
+            view.getChildren().add(star);
+            view.getChildren().add(body);
+            view.getChildren().addAll(details);
+
+        } else { // WISP
+            Circle eye1 = new Circle(-6, -5, 4, Color.WHITE);
+            Circle eye2 = new Circle(6, -5, 4, Color.WHITE);
+            Circle pupil1 = new Circle(-6, -5, 2, Color.BLACK);
+            Circle pupil2 = new Circle(6, -5, 2, Color.BLACK);
+            details.add(eye1);
+            details.add(eye2);
+            revolvers = new Group();
+            view.getChildren().add(body);
+            view.getChildren().addAll(eye1, eye2, pupil1, pupil2);
+        }
+
+        view.setLayoutX(x);
+        view.setLayoutY(y);
+        view.setVisible(false);
+
+        double vx = Math.cos(angle) * speed;
+        double vy = Math.sin(angle) * speed;
+
+        switch (type) {
+            case GHOST:  return new Enemy_Ghost(view, body, details, bodyColor, x, y, vx, vy, baseRadius);
+            case RIPPER: return new Enemy_Ripper(view, body, details, bodyColor, star, x, y, vx, vy, baseRadius);
+            case WISP:   return new Enemy_Wisp(view, body, details, bodyColor, revolvers, x, y, vx, vy, baseRadius);
+            default: throw new IllegalStateException("Unexpected enemy type");
+        }
     }
 }

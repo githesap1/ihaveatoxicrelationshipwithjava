@@ -36,7 +36,7 @@ java {
 javafx {
     version = "21"
     // In Kotlin, this is a method call instead of an array assignment
-    modules("javafx.controls", "javafx.fxml") 
+    modules("javafx.controls", "javafx.fxml", "javafx.media")
 }
 
 application {

@@ -1,11 +1,6 @@
-// CSE 1242 - Introduction to Programming II - Term Project
-// Author(s): [Ad Soyad] - [Ogrenci No]
-//
-// GamePane.java
-// Main game screen. Acts as the coordinator between all game systems.
-// Handles the game loop, player input, enemy movement, collision detection,
-// the scanner mechanic, token spawning, and win/lose panels.
-// HUD drawing is delegated to HudDisplay, entity creation to EnemyFactory.
+// CSE 1242 - Term Project
+// Ogrenci: [Ad Soyad] - [Ogrenci No]
+// GamePane.java - oyunun ana sahnesi, game loop, input ve tum mekanikler burada
 
 package org.example;
 
@@ -26,7 +21,6 @@ import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Rectangle;
 import javafx.util.Duration;
 
-import org.example.config.GameConfig;
 
 public class GamePane extends Pane {
 
@@ -42,8 +36,13 @@ public class GamePane extends Pane {
     private static final double VACUUM_DRAIN_MULTIPLIER = 4.0;
     private static final double HEALTH_DRAIN_MULTIPLIER = 3.0;
 
+    private double levelDamageMultiplier;
+    private int levelScoreMultiplier;
+    private int respawnKillThreshold;
+    private int killCount;
+
     private final App mainApp;
-    private final GameConfig config;
+    private final Config config;
     private final int levelNumber;
     private final int initialScore;
 
@@ -63,7 +62,19 @@ public class GamePane extends Pane {
     private final Polygon scanner = new Polygon();
     private final Rectangle playableBoundary;
 
-    private final HudDisplay hud;
+    private static final double BAR_WIDTH   = 34.0;
+    private static final double BAR_HEIGHT  = 260.0;
+    private static final double BAR_TOP     = 86.0;
+    private static final double BAR_PADDING = 4.0;
+
+    private final Rectangle vacuumContainer;
+    private final Rectangle vacuumFill;
+    private final Rectangle healthContainer;
+    private final Rectangle healthFill;
+    private final Label vacuumLabel = new Label("VACUUM:");
+    private final Label healthLabel = new Label("HEALTH:");
+    private final Label scoreLabel  = new Label();
+    private final Label timeLabel   = new Label();
 
     private final Timeline frameLoop;
     private final Timeline secondLoop;
@@ -92,9 +103,12 @@ public class GamePane extends Pane {
     private boolean levelEnded;
     private boolean isPaused;
 
-    private PauseMenu pauseMenu;
+    private Menu.Pause pauseMenu;
 
     private double eyeRevealRemaining;
+    private double speedBoostRemaining;
+    private double healthFlashRemaining;
+    private boolean isOverlapping;
     private double scannerRange = 140;
     private double scannerHalfWidth = 45;
     private double aimX = 1;
@@ -102,7 +116,7 @@ public class GamePane extends Pane {
 
     public GamePane(
             App mainApp,
-            GameConfig config,
+            Config config,
             int levelNumber,
             int initialScore
     ) {
@@ -146,7 +160,19 @@ public class GamePane extends Pane {
         scanner.setFill(Color.rgb(255, 70, 70, 0.24));
         scanner.setVisible(false);
 
-        hud = new HudDisplay(SCENE_WIDTH);
+        vacuumContainer = createBarContainer(26.0);
+        vacuumFill      = createBarFill(vacuumContainer.getX(), Color.MEDIUMPURPLE);
+        healthContainer = createBarContainer(SCENE_WIDTH - 26.0 - BAR_WIDTH);
+        healthFill      = createBarFill(healthContainer.getX(), Color.CRIMSON);
+
+        vacuumLabel.setStyle("-fx-text-fill: white; -fx-font-size: 19px; -fx-font-family: 'Blood Crow';");
+        healthLabel.setStyle("-fx-text-fill: white; -fx-font-size: 19px; -fx-font-family: 'Blood Crow';");
+        scoreLabel.setStyle("-fx-text-fill: white; -fx-font-size: 30px; -fx-font-family: 'Blood Crow';");
+        timeLabel.setStyle("-fx-text-fill: white; -fx-font-size: 28px; -fx-font-family: 'Blood Crow';");
+        vacuumLabel.setLayoutX(20);
+        vacuumLabel.setLayoutY(BAR_TOP - 34);
+        healthLabel.setLayoutX(SCENE_WIDTH - 136);
+        healthLabel.setLayoutY(BAR_TOP - 34);
 
         getChildren().addAll(
                 playableTint,
@@ -156,13 +182,14 @@ public class GamePane extends Pane {
                 entityLayer,
                 hunterBody
         );
-        getChildren().addAll(hud.getNodes());
+        getChildren().addAll(vacuumFill, vacuumContainer, healthFill, healthContainer,
+                             vacuumLabel, healthLabel, scoreLabel, timeLabel);
 
         spawnEnemies(Enemy.GHOST, levelGhostCount);
         spawnEnemies(Enemy.RIPPER, levelRipperCount);
         spawnEnemies(Enemy.WISP, levelWispCount);
 
-        pauseMenu = new PauseMenu(SCENE_WIDTH, SCENE_HEIGHT,
+        pauseMenu = new Menu.Pause(SCENE_WIDTH, SCENE_HEIGHT,
                 this::resumeGame,
                 () -> {
                     stopGameLoop();
@@ -174,6 +201,9 @@ public class GamePane extends Pane {
         aimMethod();
         updateHud();
 
+        String levelMusic = levelNumber == 4 ? "boss_music" : "level" + levelNumber + "_music";
+        SoundManager.playMusic(levelMusic);
+
         frameLoop = new Timeline(new KeyFrame(Duration.seconds(STEP_SECONDS), e -> updateFrame()));
         frameLoop.setCycleCount(Timeline.INDEFINITE);
 
@@ -184,7 +214,7 @@ public class GamePane extends Pane {
         tokenSpawnLoop.setCycleCount(Timeline.INDEFINITE);
     }
 
-    // starts the frame loop, second timer, and token spawn timer
+    // looplari baslatir
     public void startGameLoop() {
         if (levelEnded) {
             return;
@@ -194,14 +224,15 @@ public class GamePane extends Pane {
         tokenSpawnLoop.play();
     }
 
-    // stops all timers (called when level ends)
+    // level bitince looplari durdurur
     public void stopGameLoop() {
         frameLoop.stop();
         secondLoop.stop();
         tokenSpawnLoop.stop();
+        SoundManager.stopVacuum();
+        SoundManager.stopDamage();
     }
 
-    // pauses the game and shows the pause menu overlay
     private void pauseGame() {
         isPaused = true;
         stopGameLoop();
@@ -209,7 +240,6 @@ public class GamePane extends Pane {
         pauseMenu.toFront();
     }
 
-    // hides the pause menu and resumes the game
     void resumeGame() {
         isPaused = false;
         pauseMenu.setVisible(false);
@@ -217,7 +247,7 @@ public class GamePane extends Pane {
         requestFocus();
     }
 
-    // registers keyboard and mouse input handlers
+    // klavye ve mouse input'lari
     private void setupInputHandlers() {
         setOnMouseMoved(e -> updateAimFromMouse(e.getX(), e.getY()));
         setOnMouseDragged(e -> updateAimFromMouse(e.getX(), e.getY()));
@@ -242,6 +272,7 @@ public class GamePane extends Pane {
                 case M:
                     if (!cheatKeyHeld) {
                         playableBoundary.setVisible(!playableBoundary.isVisible());
+                        SoundManager.play("gg");
                     }
                     cheatKeyHeld = true;
                     break;
@@ -285,7 +316,7 @@ public class GamePane extends Pane {
         });
     }
 
-    // calculates the aim direction vector from the hunter's center to the mouse position
+    // mouse pozisyonundan aim yonu hesaplar
     private void updateAimFromMouse(double mouseX, double mouseY) {
         double dx = mouseX - hunterBody.getCenterX();
         double dy = mouseY - hunterBody.getCenterY();
@@ -297,7 +328,7 @@ public class GamePane extends Pane {
         }
     }
 
-    // called every frame (~60 times per second), runs the full game update
+    // her frame'de cagrilir (~60fps)
     private void updateFrame() {
         if (levelEnded) {
             return;
@@ -310,6 +341,7 @@ public class GamePane extends Pane {
         hunterDamage();
         collectTokens();
         fadeEyeReveal();
+        updateHunterColor();
         updateHud();
 
         if (currentHealth <= 0) {
@@ -317,12 +349,12 @@ public class GamePane extends Pane {
             return;
         }
 
-        if (enemies.isEmpty()) {
+        if (enemies.isEmpty() && levelNumber != 4) {
             showWinPanel();
         }
     }
 
-    // called every second to decrement the countdown timer
+    // her saniye geri sayim azaltir
     private void timerMethod() {
         if (levelEnded) {
             return;
@@ -332,11 +364,15 @@ public class GamePane extends Pane {
         if (remainingSeconds <= 0) {
             remainingSeconds = 0;
             updateHud();
-            showLosePanel("Time is up");
+            if (levelNumber == 4) {
+                showWinPanel();
+            } else {
+                showLosePanel("Time is up");
+            }
         }
     }
 
-    // moves the hunter based on WASD key states, stayBetweened to the playable area
+    // WASD ile hunter hareketi, sinir kontrollü
     private void moveHunter() {
         double dx = 0;
         double dy = 0;
@@ -359,7 +395,8 @@ public class GamePane extends Pane {
             dx /= length;
             dy /= length;
 
-            double distance = PLAYER_SPEED * STEP_SECONDS;
+            double speedMultiplier = speedBoostRemaining > 0 ? 1.7 : 1.0;
+            double distance = PLAYER_SPEED * speedMultiplier * STEP_SECONDS;
             double nextX = hunterBody.getCenterX() + dx * distance;
             double nextY = hunterBody.getCenterY() + dy * distance;
 
@@ -373,7 +410,7 @@ public class GamePane extends Pane {
         }
     }
 
-    // recalculates the scanner triangle's vertex positions based on aim direction
+    // scanner ucgeninin koselerini aim yonune gore hesaplar
     private void aimMethod() {
         double cx = hunterBody.getCenterX();
         double cy = hunterBody.getCenterY();
@@ -403,6 +440,7 @@ public class GamePane extends Pane {
 
     // drains vacuum when scanning, recharges when not scanning
     private void mustafa_Suckerberg() {
+        boolean wasActive = scanner.isVisible();
         boolean scannerActive = scannerPressed && currentVacuum > 0;
 
         if (scannerActive) {
@@ -421,9 +459,12 @@ public class GamePane extends Pane {
         }
 
         scanner.setVisible(scannerActive);
+
+        if (scannerActive && !wasActive) SoundManager.startVacuum();
+        else if (!scannerActive && wasActive) SoundManager.stopVacuum();
     }
 
-    // moves all enemies, bounces them off walls, shrinks them in scanner, removes captured ones
+    // enemy hareketi, duvar sekme, scanner kucultme, yakalama
     private void moveEnemies() {
         for (int i = enemies.size() - 1; i >= 0; i--) {
             Enemy enemy = enemies.get(i);
@@ -456,9 +497,14 @@ public class GamePane extends Pane {
             }
 
             if (enemy.getRadius() <= CAPTURE_THRESHOLD) {
-                score += enemy.getScoreValue();
+                if (enemy.getType() == Enemy.GHOST) SoundManager.play("ghost_death");
+                else if (enemy.getType() == Enemy.RIPPER) SoundManager.play("ripper_death");
+                else SoundManager.play("wisp_death");
+                score += enemy.getScoreValue() * levelScoreMultiplier;
                 entityLayer.getChildren().remove(enemy.getView());
                 enemies.remove(i);
+                killCount++;
+                checkKillMilestones();
                 continue;
             }
 
@@ -467,7 +513,7 @@ public class GamePane extends Pane {
         }
     }
 
-    // checks for enemy-hunter overlap and drains health, also turns the hunter red
+    // enemy cakismasi varsa can azaltir, hunter kirmizi yanar
     private void hunterDamage() {
         boolean overlapping = false;
 
@@ -483,7 +529,7 @@ public class GamePane extends Pane {
                 overlapping = true;
 
                 //now this is important because if we didnt multiply it by STEP_SECONDS our health would decrease per frame which is too much so we just multiply it so the damage is manageable
-                currentHealth -= entityDamage * HEALTH_DRAIN_MULTIPLIER * STEP_SECONDS;
+                currentHealth -= entityDamage * HEALTH_DRAIN_MULTIPLIER * levelDamageMultiplier * STEP_SECONDS;
             }
         }
 
@@ -491,14 +537,12 @@ public class GamePane extends Pane {
             currentHealth = 0;
         }
 
-        if (overlapping) {
-            hunterBody.setFill(Color.RED);
-        } else {
-            hunterBody.setFill(Color.ORANGE);
-        }
+        isOverlapping = overlapping;
+        if (overlapping) SoundManager.startDamage();
+        else SoundManager.stopDamage();
     }
 
-    // checks if the hunter has walked over any token and applies its effect
+    // token toplama kontrolu
     private void collectTokens() {
         for (int i = tokens.size() - 1; i >= 0; i--) {
             Token token = tokens.get(i);
@@ -511,37 +555,55 @@ public class GamePane extends Pane {
             );
 
             if (distance <= hunterBody.getRadius() + token.getRadius()) {
-                activateToken(token.getType());
+                token.apply(this);
                 tokenLayer.getChildren().remove(token.getView());
                 tokens.remove(i);
             }
         }
     }
 
-    // applies the effect of the collected token based on its type
-    private void activateToken(int tokenType) {
-        switch (tokenType) {
-            case Token.HEALTH:
-                currentHealth += config.healthTokenIncrease > 0 ? config.healthTokenIncrease : 20;
-                if (currentHealth > maximumHealth) {
-                    currentHealth = maximumHealth;
-                }
-                break;
-            case Token.RANGE:
-                scannerHalfWidth += config.vacuumTokenIncrease > 0 ? config.vacuumTokenIncrease : 20;
-                break;
-            case Token.EYE:
-                eyeRevealRemaining = Math.max(
-                        eyeRevealRemaining,
-                        config.eyeTokenDuration > 0 ? config.eyeTokenDuration : 5
-                );
-                break;
-            default:
-                break;
+    void applyHealthToken() {
+        double amount = config.healthTokenIncrease > 0 ? config.healthTokenIncrease : 20;
+        currentHealth = Math.min(currentHealth + amount, maximumHealth);
+        healthFlashRemaining = 1.5;
+        SoundManager.play("health");
+    }
+
+    void applyRangeToken() {
+        double amount = config.vacuumTokenIncrease > 0 ? config.vacuumTokenIncrease : 20;
+        scannerHalfWidth += amount;
+        SoundManager.play("range");
+    }
+
+    void applyEyeToken() {
+        double duration = config.eyeTokenDuration > 0 ? config.eyeTokenDuration : 5;
+        eyeRevealRemaining = Math.max(eyeRevealRemaining, duration);
+        SoundManager.play("eye");
+    }
+
+    void applyTimeToken() {
+        remainingSeconds += 10;
+        SoundManager.play("time");
+    }
+
+    void applySpeedToken() {
+        double duration = config.speedTokenDuration > 0 ? config.speedTokenDuration : 6;
+        speedBoostRemaining = Math.max(speedBoostRemaining, duration);
+        SoundManager.play("speed");
+    }
+
+    private void updateHunterColor() {
+        if (isOverlapping) {
+            hunterBody.setFill(Color.RED);
+        } else if (speedBoostRemaining > 0) {
+            hunterBody.setFill(Color.DODGERBLUE);
+        } else if (healthFlashRemaining > 0) {
+            hunterBody.setFill(Color.LIMEGREEN);
+        } else {
+            hunterBody.setFill(Color.ORANGE);
         }
     }
 
-    // counts down the eye token timer each frame
     private void fadeEyeReveal() {
         if (eyeRevealRemaining > 0) {
             eyeRevealRemaining -= STEP_SECONDS;
@@ -549,33 +611,92 @@ public class GamePane extends Pane {
                 eyeRevealRemaining = 0;
             }
         }
+        if (speedBoostRemaining > 0) {
+            speedBoostRemaining -= STEP_SECONDS;
+            if (speedBoostRemaining < 0) speedBoostRemaining = 0;
+        }
+        if (healthFlashRemaining > 0) {
+            healthFlashRemaining -= STEP_SECONDS;
+            if (healthFlashRemaining < 0) healthFlashRemaining = 0;
+        }
     }
 
-    // spawns a random token at a random location in the playable area (max 2 at a time)
+    // rastgele token spawn eder, max 2 ayni anda
     private void spawnToken() {
         if (levelEnded || tokens.size() >= 2) {
             return;
         }
 
-        int type = random.nextInt(3);
-        double x = randomInRange(levelAreaX + EnemyFactory.TOKEN_RADIUS, levelAreaX + levelAreaWidth - EnemyFactory.TOKEN_RADIUS);
-        double y = randomInRange(levelAreaY + EnemyFactory.TOKEN_RADIUS, levelAreaY + levelAreaHeight - EnemyFactory.TOKEN_RADIUS);
+        double x = randomInRange(levelAreaX + Token.RADIUS, levelAreaX + levelAreaWidth - Token.RADIUS);
+        double y = randomInRange(levelAreaY + Token.RADIUS, levelAreaY + levelAreaHeight - Token.RADIUS);
 
-        Token token = EnemyFactory.spawnToken(type, x, y);
+        Token token;
+        if (levelNumber == 4) {
+            int type = random.nextInt(10);
+            if (type < 8)      token = new Token_Health(x, y);
+            else if (type == 8) token = new Token_Range(x, y);
+            else               token = new Token_Speed(x, y);
+        } else {
+            int type = random.nextInt(5);
+            switch (type) {
+                case 0:
+                case 1: token = new Token_Health(x, y); break;
+                case 2: token = new Token_Range(x, y); break;
+                case 3: token = new Token_Eye(x, y); break;
+                default: token = new Token_Speed(x, y); break;
+            }
+        }
         tokens.add(token);
         tokenLayer.getChildren().add(token.getView());
     }
 
-    // spawns a given number of enemies of the specified type into the entity layer
+    private void checkKillMilestones() {
+        if (levelNumber == 4) {
+            spawnRandomEnemyForLevel();
+            spawnRandomEnemyForLevel();
+            return;
+        }
+        if (killCount % 5 == 0) {
+            spawnTimeToken();
+        }
+        if (killCount % respawnKillThreshold == 0) {
+            spawnRandomEnemyForLevel();
+        }
+    }
+
+    // her 5 kill'de bir zaman tokeni cikar
+    private void spawnTimeToken() {
+        double x = randomInRange(levelAreaX + Token.RADIUS, levelAreaX + levelAreaWidth - Token.RADIUS);
+        double y = randomInRange(levelAreaY + Token.RADIUS, levelAreaY + levelAreaHeight - Token.RADIUS);
+        Token token = new Token_Time(x, y);
+        tokens.add(token);
+        tokenLayer.getChildren().add(token.getView());
+    }
+
+    private void spawnRandomEnemyForLevel() {
+        int type;
+        if (levelNumber == 1) {
+            type = Enemy.GHOST;
+        } else if (levelNumber == 2) {
+            type = random.nextBoolean() ? Enemy.GHOST : Enemy.RIPPER;
+        } else {
+            type = random.nextInt(3);
+        }
+        Enemy enemy = Enemy.spawn(type, levelAreaX, levelAreaY, levelAreaWidth, levelAreaHeight, random);
+        if (levelNumber == 4) enemy.setRadius(enemy.getRadius() * 1.5);
+        enemies.add(enemy);
+        entityLayer.getChildren().add(enemy.getView());
+    }
+
     private void spawnEnemies(int type, int count) {
         for (int i = 0; i < count; i++) {
-            Enemy enemy = EnemyFactory.spawnEnemy(type, levelAreaX, levelAreaY, levelAreaWidth, levelAreaHeight, random);
+            Enemy enemy = Enemy.spawn(type, levelAreaX, levelAreaY, levelAreaWidth, levelAreaHeight, random);
+            if (levelNumber == 4) enemy.setRadius(enemy.getRadius() * 1.5);
             enemies.add(enemy);
             entityLayer.getChildren().add(enemy.getView());
         }
     }
 
-    // returns true if the enemy overlaps with the scanner triangle
     private boolean enemyInScanner(Enemy enemy) {
         if (!scanner.isVisible()) {
             return false;
@@ -585,133 +706,91 @@ public class GamePane extends Pane {
         return scanner.getBoundsInParent().intersects(enemy.getView().getBoundsInParent());
     }
 
-    // updates the health/vacuum bar fills and score/time labels on screen
     private void updateHud() {
-        hud.update(currentHealth / maximumHealth, currentVacuum / maximumVacuum, score, remainingSeconds);
+        updateBar(healthFill, healthContainer.getX(), currentHealth / maximumHealth);
+        updateBar(vacuumFill, vacuumContainer.getX(), currentVacuum / maximumVacuum);
+
+        scoreLabel.setText("SCORE: " + score);
+        timeLabel.setText(formatTime(remainingSeconds));
+        scoreLabel.autosize();
+        timeLabel.autosize();
+        scoreLabel.setLayoutX((SCENE_WIDTH - scoreLabel.getWidth()) / 2.0);
+        scoreLabel.setLayoutY(18);
+        timeLabel.setLayoutX((SCENE_WIDTH - timeLabel.getWidth()) / 2.0);
+        timeLabel.setLayoutY(48);
     }
 
-    // displays the win overlay with next level or ending button
+    private void updateBar(Rectangle fill, double containerX, double ratio) {
+        double clamped = Math.max(0, Math.min(1, ratio));
+        double h = (BAR_HEIGHT - BAR_PADDING * 2) * clamped;
+        fill.setX(containerX + BAR_PADDING);
+        fill.setY(BAR_TOP + BAR_HEIGHT - BAR_PADDING - h);
+        fill.setWidth(BAR_WIDTH - BAR_PADDING * 2);
+        fill.setHeight(h);
+    }
+
+    private Rectangle createBarContainer(double x) {
+        Rectangle bar = new Rectangle(x, BAR_TOP, BAR_WIDTH, BAR_HEIGHT);
+        bar.setFill(Color.rgb(0, 0, 0, 0.20));
+        bar.setStroke(Color.BLACK);
+        bar.setStrokeWidth(4);
+        return bar;
+    }
+
+    private Rectangle createBarFill(double containerX, Color color) {
+        Rectangle fill = new Rectangle(
+            containerX + BAR_PADDING,
+            BAR_TOP + BAR_PADDING,
+            BAR_WIDTH - BAR_PADDING * 2,
+            BAR_HEIGHT - BAR_PADDING * 2
+        );
+        fill.setFill(color);
+        return fill;
+    }
+
+    private String formatTime(int totalSeconds) {
+        return String.format("%d:%02d", totalSeconds / 60, totalSeconds % 60);
+    }
+
+    // kazanma paneli
     private void showWinPanel() {
-        if (levelEnded) {
-            return;
-        }
+        if (levelEnded) return;
         levelEnded = true;
         stopGameLoop();
+        SoundManager.playMusic("message_screen_music");
 
-        Rectangle shade = new Rectangle(0, 0, SCENE_WIDTH, SCENE_HEIGHT);
-        shade.setFill(Color.rgb(0, 0, 0, 0.70));
-
-        Label title = new Label(levelNumber < 3 ? "YOU WON HOORAYYY!" : "WORK COMPLETE!");
-        title.setStyle("-fx-text-fill: white; -fx-font-size: 46px; -fx-font-family: 'Blood Crow';");
-
-        Label subtitle = new Label("YOU ARE THE STRONGEST HUNTER IN THE WORLD with the sole exception of satoru gojo, but hes not in this game so who cares?");
-        subtitle.setStyle("-fx-text-fill: white; -fx-font-size: 20px; -fx-font-family: 'I Still Know';");
-        subtitle.setWrapText(true);
-        subtitle.setMaxWidth(480);
-
-        Label scoreText = new Label("Score: " + score);
-        scoreText.setStyle("-fx-text-fill: white; -fx-font-size: 22px; -fx-font-family: 'I Still Know'; -fx-font-weight: bold;");
-
-        Button btContinue;
-        if (levelNumber < 3) {
-            btContinue = createPanelButton("Next Level", () -> mainApp.startLevel(levelNumber + 1, score));
-        } else {
-            btContinue = createPanelButton("View Ending(pls do)", () -> mainApp.showVictoryScreen(score));
-        }
-
-        Button btMenu = createPanelButton("Main Menu", () -> mainApp.showMainMenu());
-
-        VBox panel = new VBox(14, title, subtitle, scoreText, btContinue, btMenu);
-        panel.setAlignment(Pos.CENTER);
-        panel.setMaxWidth(420);
-
-        StackPane overlay = new StackPane(shade, panel);
-        overlay.setPrefSize(SCENE_WIDTH, SCENE_HEIGHT);
-
+        Menu.Win overlay = new Menu.Win(SCENE_WIDTH, SCENE_HEIGHT, score, levelNumber, mainApp);
         getChildren().add(overlay);
         overlay.toFront();
     }
 
-    // displays the game over overlay with the reason, score, retry and menu buttons
+    // kaybetme paneli
     private void showLosePanel(String reason) {
-        if (levelEnded) {
-            return;
-        }
+        if (levelEnded) return;
         levelEnded = true;
         stopGameLoop();
+        SoundManager.playMusic("message_screen_music");
+        SoundManager.play("game_over");
 
-        Rectangle whiteBackground = new Rectangle(0, 0, SCENE_WIDTH, SCENE_HEIGHT);
-        whiteBackground.setFill(Color.rgb(255, 255, 255, 0.95));
-
-        Label title = new Label("GAME OVER");
-        title.setStyle("-fx-text-fill: red; -fx-font-size: 52px; -fx-font-family: 'Blood Crow';");
-
-        Label reasonText = new Label(reason);
-        reasonText.setStyle("-fx-text-fill: black; -fx-font-size: 22px; -fx-font-family: 'I Still Know';");
-        reasonText.setWrapText(true);
-        reasonText.setMaxWidth(480);
-
-        Label scoreText = new Label("Final Score: " + score);
-        scoreText.setStyle("-fx-text-fill: black; -fx-font-size: 24px; -fx-font-family: 'I Still Know'; -fx-font-weight: bold;");
-
-        Button btRetry = createPanelButton("Retry Level", () -> mainApp.startLevel(levelNumber, initialScore));
-        Button btMenu = createPanelButton("Main Menu", () -> mainApp.showMainMenu());
-
-        VBox panel = new VBox(14, title, reasonText, scoreText, btRetry, btMenu);
-        panel.setAlignment(Pos.CENTER);
-        panel.setMaxWidth(480);
-        StackPane overlay = new StackPane(whiteBackground, panel);
-        overlay.setPrefSize(SCENE_WIDTH, SCENE_HEIGHT);
-
+        Menu.GameOver overlay = new Menu.GameOver(SCENE_WIDTH, SCENE_HEIGHT, reason, score, levelNumber, mainApp, initialScore);
         getChildren().add(overlay);
         overlay.toFront();
     }
 
-    private Button createPanelButton(String text, Runnable action) {
-        Button button = new Button(text);
-        button.setPrefWidth(240);
-        button.setPrefHeight(46);
-        stylePanelButtonDefault(button);
-
-        button.setOnMousePressed(e -> stylePanelButtonPressed(button));
-        button.setOnMouseReleased(e -> {
-            stylePanelButtonDefault(button);
-            if (button.isHover()) {
-                action.run();
-            }
-        });
-        button.setOnMouseExited(e -> stylePanelButtonDefault(button));
-        return button;
-    }
-
-    private void stylePanelButtonDefault(Button button) {
-        button.setStyle("-fx-background-color: purple;"
-                + "-fx-text-fill: white;"
-                + "-fx-font-size: 18px;"
-                + "-fx-font-family: 'I Still Know';"
-                + "-fx-font-weight: bold;"
-                + "-fx-background-radius: 8;");
-    }
-
-    private void stylePanelButtonPressed(Button button) {
-        button.setStyle("-fx-background-color: white;"
-                + "-fx-text-fill: red;"
-                + "-fx-font-size: 18px;"
-                + "-fx-font-family: 'I Still Know';"
-                + "-fx-font-weight: bold;"
-                + "-fx-background-radius: 8;");
-    }
-
-    // returns the background color style string for a given level number
     private String backgroundStyle(int levelNumber) {
-        if (levelNumber == 1) {
-            return "-fx-background-color: purple;";
-        } else if (levelNumber == 2) {
-            return "-fx-background-color: darkslategray;";
-        } else if (levelNumber == 3) {
-            return "-fx-background-color: saddlebrown;";
-        }
+        String name;
+        if (levelNumber == 1) name = "level1.jpg";
+        else if (levelNumber == 2) name = "level2.jpg";
+        else if (levelNumber == 3) name = "level3.jpg";
+        else if (levelNumber == 4) name = "bossfight.jpg";
+        else return "-fx-background-color: black;";
 
+        java.net.URL url = getClass().getResource("/images/" + name);
+        if (url != null) {
+            return "-fx-background-image: url('" + url.toExternalForm() + "');"
+                 + "-fx-background-size: cover;"
+                 + "-fx-background-position: center;";
+        }
         return "-fx-background-color: black;";
     }
 
@@ -729,7 +808,7 @@ public class GamePane extends Pane {
         return Math.sqrt(dx * dx + dy * dy);
     }
 
-    // reads the level-specific config values (area, time, entity counts) from the config object
+    // config.txt'den level ayarlarini yukler
     private void loadLevelConfig(int levelNumber) {
         if (levelNumber == 1) {
             levelAreaX = config.level1PlayableAreaX;
@@ -740,6 +819,9 @@ public class GamePane extends Pane {
             levelGhostCount = config.level1Ghosts;
             levelRipperCount = config.level1Rippers;
             levelWispCount = config.level1Wisps;
+            levelDamageMultiplier = 1.0;
+            levelScoreMultiplier = 1;
+            respawnKillThreshold = 3;
         } else if (levelNumber == 2) {
             levelAreaX = config.level2PlayableAreaX;
             levelAreaY = config.level2PlayableAreaY;
@@ -749,6 +831,9 @@ public class GamePane extends Pane {
             levelGhostCount = config.level2Ghosts;
             levelRipperCount = config.level2Rippers;
             levelWispCount = config.level2Wisps;
+            levelDamageMultiplier = 1.5;
+            levelScoreMultiplier = 2;
+            respawnKillThreshold = 3;
         } else if (levelNumber == 3) {
             levelAreaX = config.level3PlayableAreaX;
             levelAreaY = config.level3PlayableAreaY;
@@ -758,6 +843,21 @@ public class GamePane extends Pane {
             levelGhostCount = config.level3Ghosts;
             levelRipperCount = config.level3Rippers;
             levelWispCount = config.level3Wisps;
+            levelDamageMultiplier = 2.0;
+            levelScoreMultiplier = 4;
+            respawnKillThreshold = 2;
+        } else if (levelNumber == 4) {
+            levelAreaX = config.level3PlayableAreaX;
+            levelAreaY = config.level3PlayableAreaY;
+            levelAreaWidth = config.level3PlayableAreaWidth;
+            levelAreaHeight = config.level3PlayableAreaHeight;
+            levelTimeLimitSeconds = 90;
+            levelGhostCount = 4;
+            levelRipperCount = 3;
+            levelWispCount = 3;
+            levelDamageMultiplier = 2.5;
+            levelScoreMultiplier = 6;
+            respawnKillThreshold = 1;
         } else {
             levelAreaX = 200;
             levelAreaY = 120;
@@ -767,6 +867,9 @@ public class GamePane extends Pane {
             levelGhostCount = 5;
             levelRipperCount = 0;
             levelWispCount = 0;
+            levelDamageMultiplier = 1.0;
+            levelScoreMultiplier = 1;
+            respawnKillThreshold = 5;
         }
     }
 }

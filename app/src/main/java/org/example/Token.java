@@ -1,58 +1,31 @@
-// CSE 1242 - Introduction to Programming II - Term Project
-// Author(s): [Ad Soyad] - [Ogrenci No]
-//
-// Token.java
-// Represents a collectible token on the map. There are 3 types: Health (restores HP),
-// Range (widens the scanner triangle), and Eye (reveals all enemies temporarily).
+// CSE 1242 - Term Project
+// Ogrenci: [Ad Soyad] - [Ogrenci No]
+// Token.java - toplanabilir powerup tokenlar icin soyut taban sinifi
 
 package org.example;
 
 import javafx.scene.Group;
 
-public class Token {
-    public static final int HEALTH = 0;
-    public static final int RANGE = 1;
-    public static final int EYE = 2;
+public abstract class Token {
 
-    private int type;
-    private Group view;
-    private double x;
-    private double y;
-    private double radius;
+    public static final double RADIUS = 14.0;
 
-    public Token(int type, Group view, double x, double y, double radius) {
-        this.type = type;
-        this.view = view;
+    protected final Group view;
+    private final double x;
+    private final double y;
+
+    protected Token(double x, double y) {
         this.x = x;
         this.y = y;
-        this.radius = radius;
+        this.view = new Group();
+        this.view.setLayoutX(x);
+        this.view.setLayoutY(y);
     }
 
-    public int getType() {
-        return type;
-    }
+    public abstract void apply(GamePane game);
 
-    public Group getView() {
-        return view;
-    }
-
-    public double getX() {
-        return x;
-    }
-
-    public void setX(double x) {
-        this.x = x;
-    }
-
-    public double getY() {
-        return y;
-    }
-
-    public void setY(double y) {
-        this.y = y;
-    }
-
-    public double getRadius() {
-        return radius;
-    }
+    public Group getView() { return view; }
+    public double getX()   { return x; }
+    public double getY()   { return y; }
+    public double getRadius() { return RADIUS; }
 }
