@@ -1,3 +1,10 @@
+// CSE 1242 - Introduction to Programming II - Term Project
+// Author(s): [Ad Soyad] - [Ogrenci No]
+//
+// Token.java
+// Represents a collectible token on the map. There are 3 types: Health (restores HP),
+// Range (widens the scanner triangle), and Eye (reveals all enemies temporarily).
+
 package org.example;
 
 import javafx.scene.Group;

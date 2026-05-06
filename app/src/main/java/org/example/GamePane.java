@@ -1,3 +1,12 @@
+// CSE 1242 - Introduction to Programming II - Term Project
+// Author(s): [Ad Soyad] - [Ogrenci No]
+//
+// GamePane.java
+// Main game screen. Acts as the coordinator between all game systems.
+// Handles the game loop, player input, enemy movement, collision detection,
+// the scanner mechanic, token spawning, and win/lose panels.
+// HUD drawing is delegated to HudDisplay, entity creation to EnemyFactory.
+
 package org.example;
 
 import java.util.ArrayList;
@@ -6,7 +15,6 @@ import java.util.Random;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.geometry.Pos;
-import javafx.scene.Group;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.Pane;
@@ -14,7 +22,6 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
-import javafx.scene.shape.Ellipse;
 import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Rectangle;
 import javafx.util.Duration;
@@ -22,6 +29,7 @@ import javafx.util.Duration;
 import org.example.config.GameConfig;
 
 public class GamePane extends Pane {
+
     private static final double SCENE_WIDTH = 1280;
     private static final double SCENE_HEIGHT = 800;
 
@@ -33,11 +41,6 @@ public class GamePane extends Pane {
     private static final double VACUUM_SHRINK_RATE = 24.0;
     private static final double VACUUM_DRAIN_MULTIPLIER = 4.0;
     private static final double HEALTH_DRAIN_MULTIPLIER = 3.0;
-    private static final double BAR_WIDTH = 34.0;
-    private static final double BAR_HEIGHT = 260.0;
-    private static final double BAR_TOP = 86.0;
-    private static final double BAR_PADDING = 4.0;
-    private static final double TOKEN_RADIUS = 14.0;
 
     private final App mainApp;
     private final GameConfig config;
@@ -60,15 +63,7 @@ public class GamePane extends Pane {
     private final Polygon scanner = new Polygon();
     private final Rectangle playableBoundary;
 
-    private final Rectangle vacuumContainer;
-    private final Rectangle vacuumFill;
-    private final Rectangle healthContainer;
-    private final Rectangle healthFill;
-
-    private final Label vacuumLabel = new Label("VACUUM");
-    private final Label healthLabel = new Label("HEALTH");
-    private final Label scoreLabel = new Label();
-    private final Label timeLabel = new Label();
+    private final HudDisplay hud;
 
     private final Timeline frameLoop;
     private final Timeline secondLoop;
@@ -95,6 +90,9 @@ public class GamePane extends Pane {
     private boolean scannerPressed;
     private boolean cheatKeyHeld;
     private boolean levelEnded;
+    private boolean isPaused;
+
+    private PauseMenu pauseMenu;
 
     private double eyeRevealRemaining;
     private double scannerRange = 140;
@@ -112,7 +110,7 @@ public class GamePane extends Pane {
         this.config = config;
         this.levelNumber = levelNumber;
         this.initialScore = initialScore;
-        readLevelSettings(levelNumber);
+        loadLevelConfig(levelNumber);
 
         setPrefSize(SCENE_WIDTH, SCENE_HEIGHT);
         setFocusTraversable(true);
@@ -148,12 +146,7 @@ public class GamePane extends Pane {
         scanner.setFill(Color.rgb(255, 70, 70, 0.24));
         scanner.setVisible(false);
 
-        vacuumContainer = createBarContainer(26.0);
-        vacuumFill = createBarFill(vacuumContainer.getX(), Color.MEDIUMPURPLE);
-        healthContainer = createBarContainer(SCENE_WIDTH - 26.0 - BAR_WIDTH);
-        healthFill = createBarFill(healthContainer.getX(), Color.CRIMSON);
-
-        styleStatusLabels();
+        hud = new HudDisplay(SCENE_WIDTH);
 
         getChildren().addAll(
                 playableTint,
@@ -161,35 +154,37 @@ public class GamePane extends Pane {
                 scanner,
                 tokenLayer,
                 entityLayer,
-                hunterBody,
-                vacuumFill,
-                vacuumContainer,
-                healthFill,
-                healthContainer,
-                vacuumLabel,
-                healthLabel,
-                scoreLabel,
-                timeLabel
+                hunterBody
         );
+        getChildren().addAll(hud.getNodes());
 
         spawnEnemies(Enemy.GHOST, levelGhostCount);
         spawnEnemies(Enemy.RIPPER, levelRipperCount);
         spawnEnemies(Enemy.WISP, levelWispCount);
 
+        pauseMenu = new PauseMenu(SCENE_WIDTH, SCENE_HEIGHT,
+                this::resumeGame,
+                () -> {
+                    stopGameLoop();
+                    mainApp.showMainMenu();
+                });
+        getChildren().add(pauseMenu);
+
         setupInputHandlers();
-        updateScannerShape();
+        aimMethod();
         updateHud();
 
         frameLoop = new Timeline(new KeyFrame(Duration.seconds(STEP_SECONDS), e -> updateFrame()));
         frameLoop.setCycleCount(Timeline.INDEFINITE);
 
-        secondLoop = new Timeline(new KeyFrame(Duration.seconds(1), e -> tickSecond()));
+        secondLoop = new Timeline(new KeyFrame(Duration.seconds(1), e -> timerMethod()));
         secondLoop.setCycleCount(Timeline.INDEFINITE);
 
         tokenSpawnLoop = new Timeline(new KeyFrame(Duration.seconds(5), e -> spawnToken()));
         tokenSpawnLoop.setCycleCount(Timeline.INDEFINITE);
     }
 
+    // starts the frame loop, second timer, and token spawn timer
     public void startGameLoop() {
         if (levelEnded) {
             return;
@@ -199,12 +194,30 @@ public class GamePane extends Pane {
         tokenSpawnLoop.play();
     }
 
+    // stops all timers (called when level ends)
     public void stopGameLoop() {
         frameLoop.stop();
         secondLoop.stop();
         tokenSpawnLoop.stop();
     }
 
+    // pauses the game and shows the pause menu overlay
+    private void pauseGame() {
+        isPaused = true;
+        stopGameLoop();
+        pauseMenu.setVisible(true);
+        pauseMenu.toFront();
+    }
+
+    // hides the pause menu and resumes the game
+    void resumeGame() {
+        isPaused = false;
+        pauseMenu.setVisible(false);
+        startGameLoop();
+        requestFocus();
+    }
+
+    // registers keyboard and mouse input handlers
     private void setupInputHandlers() {
         setOnMouseMoved(e -> updateAimFromMouse(e.getX(), e.getY()));
         setOnMouseDragged(e -> updateAimFromMouse(e.getX(), e.getY()));
@@ -231,6 +244,15 @@ public class GamePane extends Pane {
                         playableBoundary.setVisible(!playableBoundary.isVisible());
                     }
                     cheatKeyHeld = true;
+                    break;
+                case ESCAPE:
+                    if (!levelEnded) {
+                        if (isPaused) {
+                            resumeGame();
+                        } else {
+                            pauseGame();
+                        }
+                    }
                     break;
                 default:
                     break;
@@ -263,6 +285,7 @@ public class GamePane extends Pane {
         });
     }
 
+    // calculates the aim direction vector from the hunter's center to the mouse position
     private void updateAimFromMouse(double mouseX, double mouseY) {
         double dx = mouseX - hunterBody.getCenterX();
         double dy = mouseY - hunterBody.getCenterY();
@@ -274,18 +297,19 @@ public class GamePane extends Pane {
         }
     }
 
+    // called every frame (~60 times per second), runs the full game update
     private void updateFrame() {
         if (levelEnded) {
             return;
         }
 
         moveHunter();
-        updateScannerShape();
-        updateScannerEnergy();
-        updateEnemies();
-        applyHunterDamage();
+        aimMethod();
+        mustafa_Suckerberg();
+        moveEnemies();
+        hunterDamage();
         collectTokens();
-        updateEyeReveal();
+        fadeEyeReveal();
         updateHud();
 
         if (currentHealth <= 0) {
@@ -298,7 +322,8 @@ public class GamePane extends Pane {
         }
     }
 
-    private void tickSecond() {
+    // called every second to decrement the countdown timer
+    private void timerMethod() {
         if (levelEnded) {
             return;
         }
@@ -311,6 +336,7 @@ public class GamePane extends Pane {
         }
     }
 
+    // moves the hunter based on WASD key states, stayBetweened to the playable area
     private void moveHunter() {
         double dx = 0;
         double dy = 0;
@@ -342,12 +368,13 @@ public class GamePane extends Pane {
             double minY = levelAreaY + hunterBody.getRadius();
             double maxY = levelAreaY + levelAreaHeight - hunterBody.getRadius();
 
-            hunterBody.setCenterX(clamp(nextX, minX, maxX));
-            hunterBody.setCenterY(clamp(nextY, minY, maxY));
+            hunterBody.setCenterX(stayBetween(nextX, minX, maxX));
+            hunterBody.setCenterY(stayBetween(nextY, minY, maxY));
         }
     }
 
-    private void updateScannerShape() {
+    // recalculates the scanner triangle's vertex positions based on aim direction
+    private void aimMethod() {
         double cx = hunterBody.getCenterX();
         double cy = hunterBody.getCenterY();
 
@@ -374,7 +401,8 @@ public class GamePane extends Pane {
         scanner.getPoints().setAll(nearX, nearY, leftX, leftY, rightX, rightY);
     }
 
-    private void updateScannerEnergy() {
+    // drains vacuum when scanning, recharges when not scanning
+    private void mustafa_Suckerberg() {
         boolean scannerActive = scannerPressed && currentVacuum > 0;
 
         if (scannerActive) {
@@ -395,7 +423,8 @@ public class GamePane extends Pane {
         scanner.setVisible(scannerActive);
     }
 
-    private void updateEnemies() {
+    // moves all enemies, bounces them off walls, shrinks them in scanner, removes captured ones
+    private void moveEnemies() {
         for (int i = enemies.size() - 1; i >= 0; i--) {
             Enemy enemy = enemies.get(i);
 
@@ -409,21 +438,21 @@ public class GamePane extends Pane {
 
             if (enemy.getX() <= minX || enemy.getX() >= maxX) {
                 enemy.setVx(enemy.getVx() * -1);
-                enemy.setX(clamp(enemy.getX(), minX, maxX));
+                enemy.setX(stayBetween(enemy.getX(), minX, maxX));
             }
             if (enemy.getY() <= minY || enemy.getY() >= maxY) {
                 enemy.setVy(enemy.getVy() * -1);
-                enemy.setY(clamp(enemy.getY(), minY, maxY));
+                enemy.setY(stayBetween(enemy.getY(), minY, maxY));
             }
 
-            boolean insideScanner = isInsideScanner(enemy);
+            boolean insideScanner = enemyInScanner(enemy);
             boolean visibleByPower = playableBoundary.isVisible() || eyeRevealRemaining > 0;
 
             if (insideScanner) {
-                enemy.setDetectedStyle();
+                enemy.inZone();
                 enemy.setRadius(enemy.getRadius() - VACUUM_SHRINK_RATE * STEP_SECONDS);
             } else {
-                enemy.setNormalStyle();
+                enemy.outOfZone();
             }
 
             if (enemy.getRadius() <= CAPTURE_THRESHOLD) {
@@ -433,12 +462,13 @@ public class GamePane extends Pane {
                 continue;
             }
 
-            enemy.syncView();
+            enemy.updatePosition();
             enemy.getView().setVisible(visibleByPower || insideScanner);
         }
     }
 
-    private void applyHunterDamage() {
+    // checks for enemy-hunter overlap and drains health, also turns the hunter red
+    private void hunterDamage() {
         boolean overlapping = false;
 
         for (Enemy enemy : enemies) {
@@ -468,6 +498,7 @@ public class GamePane extends Pane {
         }
     }
 
+    // checks if the hunter has walked over any token and applies its effect
     private void collectTokens() {
         for (int i = tokens.size() - 1; i >= 0; i--) {
             Token token = tokens.get(i);
@@ -480,14 +511,15 @@ public class GamePane extends Pane {
             );
 
             if (distance <= hunterBody.getRadius() + token.getRadius()) {
-                applyTokenEffect(token.getType());
+                activateToken(token.getType());
                 tokenLayer.getChildren().remove(token.getView());
                 tokens.remove(i);
             }
         }
     }
 
-    private void applyTokenEffect(int tokenType) {
+    // applies the effect of the collected token based on its type
+    private void activateToken(int tokenType) {
         switch (tokenType) {
             case Token.HEALTH:
                 currentHealth += config.healthTokenIncrease > 0 ? config.healthTokenIncrease : 20;
@@ -509,7 +541,8 @@ public class GamePane extends Pane {
         }
     }
 
-    private void updateEyeReveal() {
+    // counts down the eye token timer each frame
+    private void fadeEyeReveal() {
         if (eyeRevealRemaining > 0) {
             eyeRevealRemaining -= STEP_SECONDS;
             if (eyeRevealRemaining < 0) {
@@ -518,140 +551,32 @@ public class GamePane extends Pane {
         }
     }
 
+    // spawns a random token at a random location in the playable area (max 2 at a time)
     private void spawnToken() {
         if (levelEnded || tokens.size() >= 2) {
             return;
         }
 
         int type = random.nextInt(3);
-        double x = randomInRange(levelAreaX + TOKEN_RADIUS, levelAreaX + levelAreaWidth - TOKEN_RADIUS);
-        double y = randomInRange(levelAreaY + TOKEN_RADIUS, levelAreaY + levelAreaHeight - TOKEN_RADIUS);
+        double x = randomInRange(levelAreaX + EnemyFactory.TOKEN_RADIUS, levelAreaX + levelAreaWidth - EnemyFactory.TOKEN_RADIUS);
+        double y = randomInRange(levelAreaY + EnemyFactory.TOKEN_RADIUS, levelAreaY + levelAreaHeight - EnemyFactory.TOKEN_RADIUS);
 
-        Token token = createToken(type, x, y);
+        Token token = EnemyFactory.spawnToken(type, x, y);
         tokens.add(token);
         tokenLayer.getChildren().add(token.getView());
     }
 
-    private Token createToken(int type, double x, double y) {
-        Group view = new Group();
-
-        switch (type) {
-            case Token.HEALTH:
-                Rectangle vertical = new Rectangle(-4, -12, 8, 24);
-                vertical.setFill(Color.RED);
-                Rectangle horizontal = new Rectangle(-12, -4, 24, 8);
-                horizontal.setFill(Color.RED);
-                view.getChildren().addAll(vertical, horizontal);
-                break;
-            case Token.RANGE:
-                Polygon triangle = new Polygon(
-                        0.0, -14.0,
-                        13.0, 12.0,
-                        -13.0, 12.0
-                );
-                triangle.setFill(Color.PURPLE);
-                triangle.setStroke(Color.WHITE);
-                view.getChildren().add(triangle);
-                break;
-            case Token.EYE:
-                Ellipse eye = new Ellipse(0, 0, 14, 9);
-                eye.setFill(Color.WHITE);
-                eye.setStroke(Color.BLACK);
-                Circle pupil = new Circle(0, 0, 4, Color.BLACK);
-                view.getChildren().addAll(eye, pupil);
-                break;
-            default:
-                break;
-        }
-
-        view.setLayoutX(x);
-        view.setLayoutY(y);
-
-        return new Token(type, view, x, y, TOKEN_RADIUS);
-    }
-
+    // spawns a given number of enemies of the specified type into the entity layer
     private void spawnEnemies(int type, int count) {
         for (int i = 0; i < count; i++) {
-            Enemy enemy = createEnemy(type);
+            Enemy enemy = EnemyFactory.spawnEnemy(type, levelAreaX, levelAreaY, levelAreaWidth, levelAreaHeight, random);
             enemies.add(enemy);
             entityLayer.getChildren().add(enemy.getView());
         }
     }
 
-    private Enemy createEnemy(int type) {
-        double baseRadius;
-        double minSpeed;
-        double maxSpeed;
-        Color bodyColor;
-
-        switch (type) {
-            case Enemy.GHOST:
-                baseRadius = 18;
-                minSpeed = 70;
-                maxSpeed = 130;
-                bodyColor = Color.rgb(255, 255, 255, 0.80);
-                break;
-            case Enemy.RIPPER:
-                baseRadius = 16;
-                minSpeed = 110;
-                maxSpeed = 170;
-                bodyColor = Color.rgb(176, 85, 255, 0.88);
-                break;
-            case Enemy.WISP:
-                baseRadius = 24;
-                minSpeed = 65;
-                maxSpeed = 120;
-                bodyColor = Color.rgb(130, 240, 255, 0.75);
-                break;
-            default:
-                throw new IllegalStateException("Unexpected enemy type");
-        }
-
-        double x = randomInRange(levelAreaX + baseRadius, levelAreaX + levelAreaWidth - baseRadius);
-        double y = randomInRange(levelAreaY + baseRadius, levelAreaY + levelAreaHeight - baseRadius);
-        double speed = randomInRange(minSpeed, maxSpeed);
-        double angle = randomInRange(0, Math.PI * 2);
-
-        Group view = new Group();
-        Circle body = new Circle(0, 0, baseRadius);
-        body.setFill(bodyColor);
-        body.setStroke(Color.BLACK);
-
-        ArrayList<Circle> details = new ArrayList<>();
-        if (type == Enemy.GHOST) {
-            Circle eye1 = new Circle(-5, -4, 2.5, Color.BLACK);
-            Circle eye2 = new Circle(5, -4, 2.5, Color.BLACK);
-            details.add(eye1);
-            details.add(eye2);
-        } else if (type == Enemy.RIPPER) {
-            Circle core = new Circle(0, 0, baseRadius * 0.45, Color.PURPLE);
-            details.add(core);
-        } else {
-            Circle core = new Circle(0, 0, baseRadius * 0.5, Color.rgb(180, 250, 255, 0.9));
-            details.add(core);
-        }
-
-        view.getChildren().add(body);
-        view.getChildren().addAll(details);
-        view.setLayoutX(x);
-        view.setLayoutY(y);
-        view.setVisible(false);
-
-        return new Enemy(
-                type,
-                view,
-                body,
-                details,
-                bodyColor,
-                x,
-                y,
-                Math.cos(angle) * speed,
-                Math.sin(angle) * speed,
-                baseRadius
-        );
-    }
-
-    private boolean isInsideScanner(Enemy enemy) {
+    // returns true if the enemy overlaps with the scanner triangle
+    private boolean enemyInScanner(Enemy enemy) {
         if (!scanner.isVisible()) {
             return false;
         }
@@ -660,67 +585,12 @@ public class GamePane extends Pane {
         return scanner.getBoundsInParent().intersects(enemy.getView().getBoundsInParent());
     }
 
+    // updates the health/vacuum bar fills and score/time labels on screen
     private void updateHud() {
-        double healthRatio = currentHealth / maximumHealth;
-        double vacuumRatio = currentVacuum / maximumVacuum;
-
-        setBarLevel(healthFill, healthContainer.getX(), healthRatio);
-        setBarLevel(vacuumFill, vacuumContainer.getX(), vacuumRatio);
-
-        scoreLabel.setText("SCORE: " + score);
-        timeLabel.setText(formatTime(remainingSeconds));
-
-        scoreLabel.autosize();
-        timeLabel.autosize();
-
-        scoreLabel.setLayoutX((SCENE_WIDTH - scoreLabel.getWidth()) / 2.0);
-        scoreLabel.setLayoutY(18);
-        timeLabel.setLayoutX((SCENE_WIDTH - timeLabel.getWidth()) / 2.0);
-        timeLabel.setLayoutY(48);
+        hud.update(currentHealth / maximumHealth, currentVacuum / maximumVacuum, score, remainingSeconds);
     }
 
-    private Rectangle createBarContainer(double x) {
-        Rectangle bar = new Rectangle(x, BAR_TOP, BAR_WIDTH, BAR_HEIGHT);
-        bar.setFill(Color.rgb(0, 0, 0, 0.20));
-        bar.setStroke(Color.BLACK);
-        bar.setStrokeWidth(4);
-        return bar;
-    }
-
-    private Rectangle createBarFill(double containerX, Color color) {
-        Rectangle fill = new Rectangle(
-                containerX + BAR_PADDING,
-                BAR_TOP + BAR_PADDING,
-                BAR_WIDTH - BAR_PADDING * 2,
-                BAR_HEIGHT - BAR_PADDING * 2
-        );
-        fill.setFill(color);
-        return fill;
-    }
-
-    private void setBarLevel(Rectangle fill, double containerX, double ratio) {
-        double clamped = clamp(ratio, 0, 1);
-        double maxFillHeight = BAR_HEIGHT - BAR_PADDING * 2;
-        double currentFillHeight = maxFillHeight * clamped;
-
-        fill.setX(containerX + BAR_PADDING);
-        fill.setY(BAR_TOP + BAR_HEIGHT - BAR_PADDING - currentFillHeight);
-        fill.setWidth(BAR_WIDTH - BAR_PADDING * 2);
-        fill.setHeight(currentFillHeight);
-    }
-
-    private void styleStatusLabels() {
-        vacuumLabel.setStyle("-fx-text-fill: white; -fx-font-size: 19px; -fx-font-family: 'Verdana'; -fx-font-weight: bold;");
-        healthLabel.setStyle("-fx-text-fill: white; -fx-font-size: 19px; -fx-font-family: 'Verdana'; -fx-font-weight: bold;");
-        scoreLabel.setStyle("-fx-text-fill: white; -fx-font-size: 30px; -fx-font-family: 'Verdana'; -fx-font-weight: bold;");
-        timeLabel.setStyle("-fx-text-fill: white; -fx-font-size: 28px; -fx-font-family: 'Verdana'; -fx-font-weight: bold;");
-
-        vacuumLabel.setLayoutX(20);
-        vacuumLabel.setLayoutY(BAR_TOP - 34);
-        healthLabel.setLayoutX(SCENE_WIDTH - 136);
-        healthLabel.setLayoutY(BAR_TOP - 34);
-    }
-
+    // displays the win overlay with next level or ending button
     private void showWinPanel() {
         if (levelEnded) {
             return;
@@ -732,21 +602,21 @@ public class GamePane extends Pane {
         shade.setFill(Color.rgb(0, 0, 0, 0.70));
 
         Label title = new Label(levelNumber < 3 ? "YOU WON HOORAYYY!" : "WORK COMPLETE!");
-        title.setStyle("-fx-text-fill: white; -fx-font-size: 46px; -fx-font-family: 'Verdana'; -fx-font-weight: bold;");
+        title.setStyle("-fx-text-fill: white; -fx-font-size: 46px; -fx-font-family: 'Blood Crow';");
 
         Label subtitle = new Label("YOU ARE THE STRONGEST HUNTER IN THE WORLD with the sole exception of satoru gojo, but hes not in this game so who cares?");
-        subtitle.setStyle("-fx-text-fill: white; -fx-font-size: 20px; -fx-font-family: 'Verdana';");
+        subtitle.setStyle("-fx-text-fill: white; -fx-font-size: 20px; -fx-font-family: 'I Still Know';");
         subtitle.setWrapText(true);
         subtitle.setMaxWidth(480);
 
         Label scoreText = new Label("Score: " + score);
-        scoreText.setStyle("-fx-text-fill: white; -fx-font-size: 22px; -fx-font-family: 'Verdana'; -fx-font-weight: bold;");
+        scoreText.setStyle("-fx-text-fill: white; -fx-font-size: 22px; -fx-font-family: 'I Still Know'; -fx-font-weight: bold;");
 
         Button btContinue;
         if (levelNumber < 3) {
             btContinue = createPanelButton("Next Level", () -> mainApp.startLevel(levelNumber + 1, score));
         } else {
-            btContinue = createPanelButton("View Ending(pls do)", () -> mainApp.showCampaignWin(score));
+            btContinue = createPanelButton("View Ending(pls do)", () -> mainApp.showVictoryScreen(score));
         }
 
         Button btMenu = createPanelButton("Main Menu", () -> mainApp.showMainMenu());
@@ -762,6 +632,7 @@ public class GamePane extends Pane {
         overlay.toFront();
     }
 
+    // displays the game over overlay with the reason, score, retry and menu buttons
     private void showLosePanel(String reason) {
         if (levelEnded) {
             return;
@@ -773,15 +644,15 @@ public class GamePane extends Pane {
         whiteBackground.setFill(Color.rgb(255, 255, 255, 0.95));
 
         Label title = new Label("GAME OVER");
-        title.setStyle("-fx-text-fill: red; -fx-font-size: 52px; -fx-font-family: 'Verdana'; -fx-font-weight: bold;");
+        title.setStyle("-fx-text-fill: red; -fx-font-size: 52px; -fx-font-family: 'Blood Crow';");
 
         Label reasonText = new Label(reason);
-        reasonText.setStyle("-fx-text-fill: black; -fx-font-size: 22px; -fx-font-family: 'Verdana';");
+        reasonText.setStyle("-fx-text-fill: black; -fx-font-size: 22px; -fx-font-family: 'I Still Know';");
         reasonText.setWrapText(true);
         reasonText.setMaxWidth(480);
 
         Label scoreText = new Label("Final Score: " + score);
-        scoreText.setStyle("-fx-text-fill: black; -fx-font-size: 24px; -fx-font-family: 'Verdana'; -fx-font-weight: bold;");
+        scoreText.setStyle("-fx-text-fill: black; -fx-font-size: 24px; -fx-font-family: 'I Still Know'; -fx-font-weight: bold;");
 
         Button btRetry = createPanelButton("Retry Level", () -> mainApp.startLevel(levelNumber, initialScore));
         Button btMenu = createPanelButton("Main Menu", () -> mainApp.showMainMenu());
@@ -817,7 +688,7 @@ public class GamePane extends Pane {
         button.setStyle("-fx-background-color: purple;"
                 + "-fx-text-fill: white;"
                 + "-fx-font-size: 18px;"
-                + "-fx-font-family: 'Verdana';"
+                + "-fx-font-family: 'I Still Know';"
                 + "-fx-font-weight: bold;"
                 + "-fx-background-radius: 8;");
     }
@@ -826,11 +697,12 @@ public class GamePane extends Pane {
         button.setStyle("-fx-background-color: white;"
                 + "-fx-text-fill: red;"
                 + "-fx-font-size: 18px;"
-                + "-fx-font-family: 'Verdana';"
+                + "-fx-font-family: 'I Still Know';"
                 + "-fx-font-weight: bold;"
                 + "-fx-background-radius: 8;");
     }
 
+    // returns the background color style string for a given level number
     private String backgroundStyle(int levelNumber) {
         if (levelNumber == 1) {
             return "-fx-background-color: purple;";
@@ -843,17 +715,11 @@ public class GamePane extends Pane {
         return "-fx-background-color: black;";
     }
 
-    private String formatTime(int totalSeconds) {
-        int minutes = totalSeconds / 60;
-        int seconds = totalSeconds % 60;
-        return String.format("%d:%02d", minutes, seconds);
-    }
-
     private double randomInRange(double min, double max) {
         return min + random.nextDouble() * (max - min);
     }
 
-    private double clamp(double value, double min, double max) {
+    private double stayBetween(double value, double min, double max) {
         return Math.max(min, Math.min(max, value));
     }
 
@@ -863,7 +729,8 @@ public class GamePane extends Pane {
         return Math.sqrt(dx * dx + dy * dy);
     }
 
-    private void readLevelSettings(int levelNumber) {
+    // reads the level-specific config values (area, time, entity counts) from the config object
+    private void loadLevelConfig(int levelNumber) {
         if (levelNumber == 1) {
             levelAreaX = config.level1PlayableAreaX;
             levelAreaY = config.level1PlayableAreaY;

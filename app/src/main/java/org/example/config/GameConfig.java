@@ -1,3 +1,11 @@
+// CSE 1242 - Introduction to Programming II - Term Project
+// Author(s): [Ad Soyad] - [Ogrenci No]
+//
+// GameConfig.java
+// Reads and stores all game configuration values from config.txt.
+// Includes global player stats (health, vacuum) and level-specific settings
+// (playable area, time limit, enemy counts, token values).
+
 package org.example.config;
 
 import java.io.File;
@@ -46,6 +54,7 @@ public class GameConfig {
     private GameConfig() {
     }
 
+    // reads config.txt line by line and maps each key to the correct field
     public static GameConfig load(File file) throws IOException {
         GameConfig config = new GameConfig();
 

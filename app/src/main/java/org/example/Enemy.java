@@ -1,3 +1,10 @@
+// CSE 1242 - Introduction to Programming II - Term Project
+// Author(s): [Ad Soyad] - [Ogrenci No]
+//
+// Enemy.java
+// Abstract base class for all paranormal entities. Stores shared state (position,
+// velocity, radius, visual group) and delegates type-specific behavior to subclasses.
+
 package org.example;
 
 import java.util.ArrayList;
@@ -6,7 +13,7 @@ import javafx.scene.Group;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 
-public class Enemy {
+public abstract class Enemy {
     public static final int GHOST = 0;
     public static final int RIPPER = 1;
     public static final int WISP = 2;
@@ -24,7 +31,7 @@ public class Enemy {
     private double baseRadius;
     private double radius;
 
-    public Enemy(
+    protected Enemy(
             int type,
             Group view,
             Circle body,
@@ -49,7 +56,8 @@ public class Enemy {
         this.radius = baseRadius;
     }
 
-    public void syncView() {
+    // updates the JavaFX group position and scale to match the logical state
+    public void updatePosition() {
         double scale = radius / baseRadius;
         view.setLayoutX(x);
         view.setLayoutY(y);
@@ -57,38 +65,19 @@ public class Enemy {
         view.setScaleY(scale);
     }
 
-    public void setNormalStyle() {
-        body.setFill(normalBodyColor);
-        for (Circle detail : details) {
-            if (type == GHOST) {
-                detail.setFill(Color.BLACK);
-            } else if (type == RIPPER) {
-                detail.setFill(Color.PURPLE);
-            } else {
-                detail.setFill(Color.rgb(180, 250, 255, 0.9));
-            }
-        }
-    }
-
-    public void setDetectedStyle() {
+    // changes the enemy color to gray/white to indicate it is being vacuumed
+    public void inZone() {
         body.setFill(Color.rgb(230, 230, 230, 0.90));
         for (Circle detail : details) {
             detail.setFill(Color.rgb(170, 170, 170, 0.92));
         }
     }
 
-    public int getScoreValue() {
-        if (type == GHOST) {
-            return 10;
-        }
-        if (type == RIPPER) {
-            return 20;
-        }
-        if (type == WISP) {
-            return 30;
-        }
-        throw new IllegalStateException("Unknown enemy type: " + type);
-    }
+    // restores the enemy's original colors when it is not in the scanner
+    public abstract void outOfZone();
+
+    // returns how many points the player gets for capturing this enemy
+    public abstract int getScoreValue();
 
     public int getType() {
         return type;

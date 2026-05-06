@@ -1,9 +1,17 @@
+// CSE 1242 - Introduction to Programming II - Term Project
+// Author(s): [Ad Soyad] - [Ogrenci No]
+//
+// App.java
+// Entry point of the application. Manages scene switching between the main menu,
+// level select screen, game levels, and end screens. Also loads the config file.
+
 package org.example;
 
 import java.io.File;
 
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.scene.text.Font;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -29,18 +37,23 @@ public class App extends Application {
     public void start(Stage stage) {
         primaryStage = stage;
 
+        Font.loadFont(getClass().getResourceAsStream("/fonts/bloodcrow.ttf"), 14);
+        Font.loadFont(getClass().getResourceAsStream("/fonts/I Still Know.ttf"), 14);
+
         try {
             config = GameConfig.load(new File("config.txt"));
         } catch (Exception ex) {
-            showConfigErrorScene("Could not load config.txt.\n" + ex.getMessage());
+            showConfigError("Could not load config.txt.\n" + ex.getMessage());
             return;
         }
 
         primaryStage.setTitle("GHOST HUNTER INC.(ALIBABA EDITION)");
+        primaryStage.setResizable(false);
         showMainMenu();
         primaryStage.show();
     }
 
+    // builds and shows the main menu with Start, Select Level, and Exit buttons
     void showMainMenu() {
         VBox root = new VBox(20);
         root.setAlignment(Pos.CENTER);
@@ -48,10 +61,10 @@ public class App extends Application {
         root.setStyle("-fx-background-color: black;");
 
         Label title = new Label("GHOST HUNTER INC.(ALIBABA EDITION)");
-        title.setStyle("-fx-text-fill: white; -fx-font-size: 54px; -fx-font-family: 'Verdana'; -fx-font-weight: bold;");
+        title.setStyle("-fx-text-fill: white; -fx-font-size: 54px; -fx-font-family: 'Blood Crow';");
 
         Label subtitle = new Label("SIR WE NEED MORE BACKUP!");
-        subtitle.setStyle("-fx-text-fill: white; -fx-font-size: 20px; -fx-font-family: 'Verdana';");
+        subtitle.setStyle("-fx-text-fill: white; -fx-font-size: 20px; -fx-font-family: 'I Still Know';");
 
         Button btStart = createMenuButton("Start Game", () -> startLevel(1, 0));
         Button btSelect = createMenuButton("Select Level", () -> showLevelSelect());
@@ -61,6 +74,7 @@ public class App extends Application {
         primaryStage.setScene(new Scene(root, SCENE_WIDTH, SCENE_HEIGHT));
     }
 
+    // shows the level selection screen with clickable cards for each level
     private void showLevelSelect() {
         VBox root = new VBox(25);
         root.setAlignment(Pos.CENTER);
@@ -68,7 +82,7 @@ public class App extends Application {
         root.setStyle("-fx-background-color: darkslateblue;");
 
         Label title = new Label("Select Level");
-        title.setStyle("-fx-text-fill: white; -fx-font-size: 44px; -fx-font-family: 'Verdana'; -fx-font-weight: bold;");
+        title.setStyle("-fx-text-fill: white; -fx-font-size: 44px; -fx-font-family: 'I Still Know'; -fx-font-weight: bold;");
 
         HBox cards = new HBox(24);
         cards.setAlignment(Pos.CENTER);
@@ -84,6 +98,7 @@ public class App extends Application {
         primaryStage.setScene(new Scene(root, SCENE_WIDTH, SCENE_HEIGHT));
     }
 
+    // creates a clickable level card with hover/press color effects
     private StackPane createLevelCard(int levelNumber, Color cardColor) {
         Rectangle background = new Rectangle(260, 180);
         background.setArcWidth(26);
@@ -93,7 +108,7 @@ public class App extends Application {
         background.setStrokeWidth(3);
 
         Label text = new Label("Level " + levelNumber);
-        text.setStyle("-fx-text-fill: white; -fx-font-size: 30px; -fx-font-family: 'Verdana'; -fx-font-weight: bold;");
+        text.setStyle("-fx-text-fill: white; -fx-font-size: 30px; -fx-font-family: 'I Still Know'; -fx-font-weight: bold;");
 
         StackPane card = new StackPane(background, text);
 
@@ -104,17 +119,17 @@ public class App extends Application {
         });
 
         card.setOnMouseExited(e -> {
-            text.setStyle("-fx-text-fill: white; -fx-font-size: 30px; -fx-font-family: 'Verdana'; -fx-font-weight: bold;");
+            text.setStyle("-fx-text-fill: white; -fx-font-size: 30px; -fx-font-family: 'I Still Know'; -fx-font-weight: bold;");
             background.setFill(cardColor);
         });
 
         card.setOnMousePressed(e -> {
             background.setFill(Color.WHITE);
-            text.setStyle("-fx-text-fill: red; -fx-font-size: 30px; -fx-font-family: 'Verdana'; -fx-font-weight: bold;");
+            text.setStyle("-fx-text-fill: red; -fx-font-size: 30px; -fx-font-family: 'I Still Know'; -fx-font-weight: bold;");
         });
 
         card.setOnMouseReleased(e -> {
-            text.setStyle("-fx-text-fill: white; -fx-font-size: 30px; -fx-font-family: 'Verdana'; -fx-font-weight: bold;");
+            text.setStyle("-fx-text-fill: white; -fx-font-size: 30px; -fx-font-family: 'I Still Know'; -fx-font-weight: bold;");
             background.setFill(cardColor);
             if (card.isHover()) {
                 startLevel(levelNumber, 0);
@@ -124,6 +139,7 @@ public class App extends Application {
         return card;
     }
 
+    // creates a GamePane for the given level and switches to it
     void startLevel(int levelNumber, int initialScore) {
         GamePane gamePane = new GamePane(
                 this,
@@ -139,13 +155,14 @@ public class App extends Application {
         gamePane.startGameLoop();
     }
 
-    void showCampaignWin(int finalScore) {
+    // shows the campaign completion screen after level 3 is beaten
+    void showVictoryScreen(int finalScore) {
         VBox root = new VBox(18);
         root.setAlignment(Pos.CENTER);
         root.setStyle("-fx-background-color: darkgreen;");
 
         Label title = new Label("HOLY MOLY YOU BEAT THE GAME! HERES YOUR PAYCHECK *hands you a " + finalScore + "TL BIM present card*");
-        title.setStyle("-fx-text-fill: white; -fx-font-size: 48px; -fx-font-family: 'Verdana'; -fx-font-weight: bold;");
+        title.setStyle("-fx-text-fill: white; -fx-font-size: 48px; -fx-font-family: 'I Still Know'; -fx-font-weight: bold;");
         title.setWrapText(true);
         title.setMaxWidth(900);
 
@@ -155,17 +172,17 @@ public class App extends Application {
         primaryStage.setScene(new Scene(root, SCENE_WIDTH, SCENE_HEIGHT));
     }
 
-    private void showConfigErrorScene(String message) {
+    private void showConfigError(String message) {
         VBox root = new VBox(14);
         root.setAlignment(Pos.CENTER);
         root.setPadding(new Insets(20));
         root.setStyle("-fx-background-color: darkred;");
 
         Label title = new Label("Config Error");
-        title.setStyle("-fx-text-fill: white; -fx-font-size: 36px; -fx-font-family: 'Verdana'; -fx-font-weight: bold;");
+        title.setStyle("-fx-text-fill: white; -fx-font-size: 36px; -fx-font-family: 'I Still Know'; -fx-font-weight: bold;");
 
         Label body = new Label(message);
-        body.setStyle("-fx-text-fill: white; -fx-font-size: 16px; -fx-font-family: 'Verdana';");
+        body.setStyle("-fx-text-fill: white; -fx-font-size: 16px; -fx-font-family: 'I Still Know';");
         body.setWrapText(true);
         body.setMaxWidth(900);
 
@@ -175,37 +192,54 @@ public class App extends Application {
         primaryStage.setScene(new Scene(root, SCENE_WIDTH, SCENE_HEIGHT));
     }
 
+    // creates a styled purple menu button with hover/press/release color feedback
     private Button createMenuButton(String text, Runnable action) {
         Button button = new Button(text);
         button.setPrefWidth(280);
         button.setPrefHeight(52);
-        setButtonDefaultStyle(button);
+        styleButtonDefault(button);
 
-        button.setOnMousePressed(e -> setButtonPressedStyle(button));
-        button.setOnMouseReleased(e -> {
-            setButtonDefaultStyle(button);
-            if (button.isHover()) {
-                action.run();
+        button.setOnMouseEntered(e -> {
+            if (!button.isPressed()) {
+                styleButtonHover(button);
             }
         });
-        button.setOnMouseExited(e -> setButtonDefaultStyle(button));
+        button.setOnMousePressed(e -> styleButtonPressed(button));
+        button.setOnMouseReleased(e -> {
+            if (button.isHover()) {
+                styleButtonHover(button);
+                action.run();
+            } else {
+                styleButtonDefault(button);
+            }
+        });
+        button.setOnMouseExited(e -> styleButtonDefault(button));
         return button;
     }
 
-    private void setButtonDefaultStyle(Button button) {
-        button.setStyle("-fx-background-color: purple;"
+    private void styleButtonHover(Button button) {
+        button.setStyle("-fx-background-color: #a040ff;"
                 + "-fx-text-fill: white;"
                 + "-fx-font-size: 20px;"
-                + "-fx-font-family: 'Verdana';"
+                + "-fx-font-family: 'I Still Know';"
                 + "-fx-font-weight: bold;"
                 + "-fx-background-radius: 8;");
     }
 
-    private void setButtonPressedStyle(Button button) {
+    private void styleButtonDefault(Button button) {
+        button.setStyle("-fx-background-color: purple;"
+                + "-fx-text-fill: white;"
+                + "-fx-font-size: 20px;"
+                + "-fx-font-family: 'I Still Know';"
+                + "-fx-font-weight: bold;"
+                + "-fx-background-radius: 8;");
+    }
+
+    private void styleButtonPressed(Button button) {
         button.setStyle("-fx-background-color: white;"
                 + "-fx-text-fill: red;"
                 + "-fx-font-size: 20px;"
-                + "-fx-font-family: 'Verdana';"
+                + "-fx-font-family: 'I Still Know';"
                 + "-fx-font-weight: bold;"
                 + "-fx-background-radius: 8;");
     }
