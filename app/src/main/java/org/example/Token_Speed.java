@@ -1,6 +1,6 @@
 // CSE 1242 - Term Project
-// Ogrenci: [Ad Soyad] - [Ogrenci No]
-// Token_Speed.java - gecici hiz artisi saglayan token
+//MuctebaEnes_Kapusuz_150124083
+// Class: Token_Speed - player'a geçici speed boost veren token.
 
 package org.example;
 
@@ -10,24 +10,28 @@ import javafx.scene.shape.Rectangle;
 
 public class Token_Speed extends Token {
 
+    // Speed token'ın görselini oluşturur.
     public Token_Speed(double x, double y) {
         super(x, y);
         Rectangle bg = new Rectangle(-12, -12, 24, 24);
-        bg.setFill(Color.DODGERBLUE);
+        bg.setFill(Color.web("#A8DADC"));
 
-        // alt ucgen (yukari bakiyor)
+        // lower triangle (pointing up)
         Polygon lower = new Polygon(-7.0, 3.0, 7.0, 3.0, 0.0, -3.0);
         lower.setFill(Color.BLACK);
 
-        // ust ucgen (yukari bakiyor, altin hemen ustunde)
+        // upper triangle (pointing up, just above the lower one)
         Polygon upper = new Polygon(-7.0, -3.0, 7.0, -3.0, 0.0, -9.0);
         upper.setFill(Color.BLACK);
 
         view.getChildren().addAll(bg, lower, upper);
     }
 
+    // Speed token efektini player'a uygular.
     @Override
     public void apply(GamePane game) {
-        game.applySpeedToken();
+        double duration = game.config.speedTokenDuration > 0 ? game.config.speedTokenDuration : 6;
+        game.speedBoostRemaining = Math.max(game.speedBoostRemaining, duration);
+        GameAudio.play("speed");
     }
 }

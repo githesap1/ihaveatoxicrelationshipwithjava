@@ -1,6 +1,6 @@
 // CSE 1242 - Term Project
-// Ogrenci: [Ad Soyad] - [Ogrenci No]
-// Enemy.java - tum paranormal varliklar icin soyut taban sinifi
+//MuctebaEnes_Kapusuz_150124083
+// Class: Enemy - tüm enemz'ler için abstract base class.
 
 package org.example;
 
@@ -30,6 +30,7 @@ public abstract class Enemy {
     private double baseRadius;
     private double radius;
 
+    // Enemy'nin tüm field'larını set eder.
     protected Enemy(
             int type,
             Group view,
@@ -53,8 +54,10 @@ public abstract class Enemy {
         this.vy = vy;
         this.baseRadius = baseRadius;
         this.radius = baseRadius;
+
     }
 
+    // Group'u enemy pozisyonuna ve mevcut scale'ine göre yerleştirir.
     public void updatePosition() {
         double scale = radius / baseRadius;
         view.setLayoutX(x);
@@ -63,7 +66,7 @@ public abstract class Enemy {
         view.setScaleY(scale);
     }
 
-    // scanner icindeyken griye boyar
+    // Scanner içindeyken enemy body ve detail'lerini griye boyar.
     public void inZone() {
         body.setFill(Color.rgb(230, 230, 230, 0.90));
         for (Circle detail : details) {
@@ -71,9 +74,14 @@ public abstract class Enemy {
         }
     }
 
+    // Enemy scanner dışına çıkınca normal rengine döner.
     public abstract void outOfZone();
 
+    // Bu enemy type'ının puan değerini döner.
     public abstract int getScoreValue();
+
+    // Animation varsa durdurur, yoksa bir şey yapmaz.
+    public void stopAnimation() {}
 
     public int getType() {
         return type;
@@ -147,22 +155,24 @@ public abstract class Enemy {
         this.radius = radius;
     }
 
-    // enemy olusturur, rastgele konuma yerlestirir
+    // Verilen tzpe'ta random pozisyonda enemz oluşturup döner.
     public static Enemy spawn(int type, double areaX, double areaY,
                               double areaW, double areaH, Random random) {
+
+        System.out.println("enemy spawn ediliyor, type: " + type);
         double baseRadius, minSpeed, maxSpeed;
         Color bodyColor;
 
         switch (type) {
             case GHOST:
                 baseRadius = 18; minSpeed = 70;  maxSpeed = 130;
-                bodyColor = Color.rgb(255, 255, 255, 0.80); break;
+                bodyColor = Color.web("#C0C0C0", 0.80); break;
             case RIPPER:
                 baseRadius = 16; minSpeed = 110; maxSpeed = 170;
-                bodyColor = Color.rgb(176, 85, 255, 0.88); break;
+                bodyColor = Color.web("#FF4500", 0.88); break;
             case WISP:
                 baseRadius = 24; minSpeed = 65;  maxSpeed = 120;
-                bodyColor = Color.rgb(130, 240, 255, 0.75); break;
+                bodyColor = Color.web("#1E3A8A", 0.75); break;
             default: throw new IllegalStateException("Unexpected enemy type");
         }
 
@@ -177,15 +187,26 @@ public abstract class Enemy {
         body.setStroke(Color.BLACK);
 
         ArrayList<Circle> details = new ArrayList<>();
+        ArrayList<Circle> ghostBumps = new ArrayList<>();
         Polygon star = null;
-        Group revolvers = null;
+        Group orbitGroup = null;
 
         if (type == GHOST) {
-            Circle eye1 = new Circle(-5, -4, 2.5, Color.BLACK);
-            Circle eye2 = new Circle(5, -4, 2.5, Color.BLACK);
+            // 3 small circles at the bottom - ghost silhouette
+            Circle bump1 = new Circle(-9, 15, 6, Color.web("#C0C0C0", 0.80));
+            Circle bump2 = new Circle(0,  18, 6, Color.web("#C0C0C0", 0.80));
+            Circle bump3 = new Circle(9,  15, 6, Color.web("#C0C0C0", 0.80));
+            ghostBumps.add(bump1);
+            ghostBumps.add(bump2);
+            ghostBumps.add(bump3);
+
+            Circle eye1 = new Circle(-5, -4, 2.5, Color.web("#C70039"));
+            Circle eye2 = new Circle(5,  -4, 2.5, Color.web("#C70039"));
             details.add(eye1);
             details.add(eye2);
+
             view.getChildren().add(body);
+            view.getChildren().addAll(ghostBumps);
             view.getChildren().addAll(details);
 
         } else if (type == RIPPER) {
@@ -198,22 +219,51 @@ public abstract class Enemy {
             }
             star.setFill(bodyColor);
             star.setStroke(Color.BLACK);
+
             Circle eye1 = new Circle(-4, -3, 3, Color.BLACK);
-            Circle eye2 = new Circle(4, -3, 3, Color.BLACK);
+            Circle eye2 = new Circle(4,  -3, 3, Color.BLACK);
             details.add(eye1);
             details.add(eye2);
+
             view.getChildren().add(star);
             view.getChildren().add(body);
             view.getChildren().addAll(details);
 
         } else { // WISP
+            // 3 triangles in tangent direction, rotating around the wisp
+            orbitGroup = new Group();
+            double orbitR   = baseRadius + 12;
+            double tipOff   = 10;
+            double baseOff  = 5;
+            double halfBase = 6;
+            for (int k = 0; k < 3; k++) {
+                double ang  = Math.toRadians(k * 120);
+                double cosA = Math.cos(ang);
+                double sinA = Math.sin(ang);
+                double tangX = -sinA; // tangent direction
+                double tangY =  cosA;
+                // üçgenleri elle yerleştirmeye çalıştım ama dönerken bozuluyordu, ai'a yaptırdım
+                double cx = cosA * orbitR;
+                double cy = sinA * orbitR;
+                double tipX = cx + tangX * tipOff;
+                double tipY = cy + tangY * tipOff;
+                double b1X  = cx - tangX * baseOff + cosA * halfBase;
+                double b1Y  = cy - tangY * baseOff + sinA * halfBase;
+                double b2X  = cx - tangX * baseOff - cosA * halfBase;
+                double b2Y  = cy - tangY * baseOff - sinA * halfBase;
+                Polygon tri = new Polygon(tipX, tipY, b1X, b1Y, b2X, b2Y);
+                tri.setFill(Color.web("#3B82F6"));
+                orbitGroup.getChildren().add(tri);
+            }
+
             Circle eye1 = new Circle(-6, -5, 4, Color.WHITE);
-            Circle eye2 = new Circle(6, -5, 4, Color.WHITE);
+            Circle eye2 = new Circle(6,  -5, 4, Color.WHITE);
             Circle pupil1 = new Circle(-6, -5, 2, Color.BLACK);
-            Circle pupil2 = new Circle(6, -5, 2, Color.BLACK);
+            Circle pupil2 = new Circle(6,  -5, 2, Color.BLACK);
             details.add(eye1);
             details.add(eye2);
-            revolvers = new Group();
+
+            view.getChildren().add(orbitGroup);
             view.getChildren().add(body);
             view.getChildren().addAll(eye1, eye2, pupil1, pupil2);
         }
@@ -226,9 +276,9 @@ public abstract class Enemy {
         double vy = Math.sin(angle) * speed;
 
         switch (type) {
-            case GHOST:  return new Enemy_Ghost(view, body, details, bodyColor, x, y, vx, vy, baseRadius);
+            case GHOST:  return new Enemy_Ghost(view, body, details, ghostBumps, bodyColor, x, y, vx, vy, baseRadius);
             case RIPPER: return new Enemy_Ripper(view, body, details, bodyColor, star, x, y, vx, vy, baseRadius);
-            case WISP:   return new Enemy_Wisp(view, body, details, bodyColor, revolvers, x, y, vx, vy, baseRadius);
+            case WISP:   return new Enemy_Wisp(view, body, details, bodyColor, orbitGroup, x, y, vx, vy, baseRadius);
             default: throw new IllegalStateException("Unexpected enemy type");
         }
     }

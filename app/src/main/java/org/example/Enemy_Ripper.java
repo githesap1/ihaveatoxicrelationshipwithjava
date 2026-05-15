@@ -1,6 +1,6 @@
 // CSE 1242 - Term Project
-// Ogrenci: [Ad Soyad] - [Ogrenci No]
-// Enemy_Ripper.java - hizli, dikenli dusman, 20 puan
+//MuctebaEnes_Kapusuz_150124083
+// Class: Enemy_Ripper - hızlı dikenli Ripper enemy, 20 puan.
 
 package org.example;
 
@@ -15,6 +15,7 @@ public class Enemy_Ripper extends Enemy {
 
     private final Polygon star;
 
+    // Ripper enemy'sini oluşturur.
     public Enemy_Ripper(
             Group view,
             Circle body,
@@ -31,12 +32,22 @@ public class Enemy_Ripper extends Enemy {
         this.star = star;
     }
 
+    // Scanner içindeyken Ripper'ı soluk kırmızıya boyar.
     @Override
     public void inZone() {
-        super.inZone();
-        star.setFill(Color.rgb(210, 210, 210, 0.90));
+        applyZoneColor(Color.web("#CD5C5C"));
+        for (Circle detail : getDetails()) {
+            detail.setFill(Color.rgb(170, 170, 170, 0.92));
+        }
     }
 
+    // Aynı rengi hem body'ye hem star polygon'a uygular.
+    private void applyZoneColor(Color c) {
+        getBody().setFill(c);
+        star.setFill(c);
+    }
+
+    // Ripper'ı normal rengine döndürür.
     @Override
     public void outOfZone() {
         getBody().setFill(getNormalBodyColor());
@@ -46,6 +57,7 @@ public class Enemy_Ripper extends Enemy {
         }
     }
 
+    // Ripper için 20 puan döner.
     @Override
     public int getScoreValue() {
         return 20;

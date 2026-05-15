@@ -1,6 +1,6 @@
 // CSE 1242 - Term Project
-// Ogrenci: [Ad Soyad] - [Ogrenci No]
-// Token.java - toplanabilir powerup tokenlar icin soyut taban sinifi
+//MuctebaEnes_Kapusuz_150124083
+// Class: Token - tüm collectible token'lar için abstract base class.
 
 package org.example;
 
@@ -14,6 +14,7 @@ public abstract class Token {
     private final double x;
     private final double y;
 
+    // Token'ın pozisyonunu ve JavaFX Group'unu set eder.
     protected Token(double x, double y) {
         this.x = x;
         this.y = y;
@@ -22,10 +23,14 @@ public abstract class Token {
         this.view.setLayoutY(y);
     }
 
+    // Token toplandığında efektini GamePane üzerinde uzgular.
     public abstract void apply(GamePane game);
 
     public Group getView() { return view; }
+
     public double getX()   { return x; }
+
     public double getY()   { return y; }
+
     public double getRadius() { return RADIUS; }
 }

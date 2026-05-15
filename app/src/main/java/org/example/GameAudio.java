@@ -1,6 +1,6 @@
 // CSE 1242 - Term Project
-// Ogrenci: [Ad Soyad] - [Ogrenci No]
-// SoundManager.java - ses efektlerini ve muzikleri yukler, oynatir
+//MuctebaEnes_Kapusuz_150124083
+// Class: GameAudio - sound effect ve müzik dosyalarını yükler ve çalar.
 
 package org.example;
 
@@ -11,7 +11,7 @@ import javafx.scene.media.AudioClip;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 
-public class SoundManager {
+public class GameAudio {
 
     private static final Map<String, AudioClip> clips = new HashMap<>();
     private static MediaPlayer vacuumPlayer;
@@ -19,11 +19,12 @@ public class SoundManager {
     private static MediaPlayer musicPlayer;
     private static Class<?> appClass;
 
+    // Tüm sound effect ve müzik dosyalarını load eder.
     public static void load(Class<?> ctx) {
         appClass = ctx;
 
         String[] names = { "health", "range", "eye", "speed", "time",
-                           "ghost_death", "ripper_death", "wisp_death", "game_over", "gg", "select" };
+                           "ghost_death", "ripper_death", "wisp_death", "game_over", "gg", "select", "cheat", "concerta", "token_spawn" };
         for (String name : names) {
             try {
                 var url = ctx.getResource("/sounds/" + name + ".mp3");
@@ -32,6 +33,7 @@ public class SoundManager {
         }
 
         try {
+
             var vacUrl = ctx.getResource("/sounds/vacuum_effect.mp3");
             if (vacUrl != null) {
                 vacuumPlayer = new MediaPlayer(new Media(vacUrl.toExternalForm()));
@@ -48,6 +50,7 @@ public class SoundManager {
         } catch (Exception ignored) {}
     }
 
+    // Background müziği değiştirir ve çalar, varsa önce eskisini durdurur.
     public static void playMusic(String name) {
         if (appClass == null) return;
         if (musicPlayer != null) {
@@ -65,28 +68,37 @@ public class SoundManager {
         } catch (Exception ignored) {}
     }
 
+    // Verilen isimle AudioClip'i çalar.
     public static void play(String name) {
+
         AudioClip clip = clips.get(name);
         if (clip != null) clip.play();
     }
 
+    // Vacuum ses efektini başlatır.
     public static void startVacuum() {
         if (vacuumPlayer != null && vacuumPlayer.getStatus() != MediaPlayer.Status.PLAYING) {
             vacuumPlayer.play();
         }
     }
 
+    // Vacuum ses efektini durdurur.
     public static void stopVacuum() {
         if (vacuumPlayer != null) vacuumPlayer.stop();
     }
 
+    // Damage ses efektini başlatır.
     public static void startDamage() {
         if (damagePlayer != null && damagePlayer.getStatus() != MediaPlayer.Status.PLAYING) {
             damagePlayer.play();
         }
     }
 
+    // Damage ses efektini durdurur.
     public static void stopDamage() {
-        if (damagePlayer != null) damagePlayer.stop();
+        if (damagePlayer != null) {
+            damagePlayer.stop();
+            damagePlayer.seek(javafx.util.Duration.ZERO);
+        }
     }
 }

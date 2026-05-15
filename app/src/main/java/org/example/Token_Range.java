@@ -1,6 +1,6 @@
 // CSE 1242 - Term Project
-// Ogrenci: [Ad Soyad] - [Ogrenci No]
-// Token_Range.java - scanner menzilini genisleten token
+//MuctebaEnes_Kapusuz_150124083
+// Class: Token_Range - scanner menzilini artıran token.
 
 package org.example;
 
@@ -9,6 +9,7 @@ import javafx.scene.shape.Polygon;
 
 public class Token_Range extends Token {
 
+    // Range token'ın görselini oluşturur.
     public Token_Range(double x, double y) {
         super(x, y);
         Polygon triangle = new Polygon(
@@ -21,8 +22,11 @@ public class Token_Range extends Token {
         view.getChildren().add(triangle);
     }
 
+    // Range token efektini player'a uygular.
     @Override
     public void apply(GamePane game) {
-        game.applyRangeToken();
+        double amount = game.config.vacuumTokenIncrease > 0 ? game.config.vacuumTokenIncrease : 20;
+        game.scannerHalfWidth += amount;
+        GameAudio.play("range");
     }
 }

@@ -1,12 +1,13 @@
 // CSE 1242 - Term Project
-// Ogrenci: [Ad Soyad] - [Ogrenci No]
-// Config.java - config.txt'i okur ve oyun ayarlarini saklar
+//MuctebaEnes_Kapusuz_150124083
+// Class: Config - config.txt'den oyun ayarlarını okur ve depolar.
 
 package org.example;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
-import java.util.Scanner;
 
 public class Config {
 
@@ -48,60 +49,102 @@ public class Config {
     public int eyeTokenDuration;
     public int speedTokenDuration;
 
+    // Private constructor, dışarıdan new Config() yapılamaz.
     private Config() {}
 
+    // config.txt'zi okuzup compile eder, field'ları doldurur.
     public static Config load(File file) throws IOException {
         Config config = new Config();
+        BufferedReader reader = new BufferedReader(new FileReader(file));
+        String line;
 
-        try (Scanner reader = new Scanner(file)) {
-            while (reader.hasNextLine()) {
-                String line = reader.nextLine().trim();
+        while ((line = reader.readLine()) != null) {
+                line = line.trim();
                 if (line.isEmpty()) continue;
 
-                String[] parts = line.split(":", 2);
+                String[] parts = line.split(":");
                 if (parts.length < 2) continue;
 
                 String key = parts[0].trim();
                 int value = Integer.parseInt(parts[1].trim());
 
-                switch (key) {
-                    case "maximum_health":           config.maximumHealth = value; break;
-                    case "maximum_vacuum":           config.maximumVacuum = value; break;
-                    case "entity_damage":            config.entityDamage = value; break;
-                    case "vacuum_decrease":          config.vacuumDecrease = value; break;
-                    case "vacuum_increase":          config.vacuumIncrease = value; break;
-                    case "level_1_playable_area_x":  config.level1PlayableAreaX = value; break;
-                    case "level_1_playable_area_y":  config.level1PlayableAreaY = value; break;
-                    case "level_1_playable_area_width": config.level1PlayableAreaWidth = value; break;
-                    case "level_1_playable_area_height": config.level1PlayableAreaHeight = value; break;
-                    case "level_1_time":             config.level1Time = value; break;
-                    case "level_1_ghosts":           config.level1Ghosts = value; break;
-                    case "level_1_rippers":          config.level1Rippers = value; break;
-                    case "level_1_wisps":            config.level1Wisps = value; break;
-                    case "level_2_playable_area_x":  config.level2PlayableAreaX = value; break;
-                    case "level_2_playable_area_y":  config.level2PlayableAreaY = value; break;
-                    case "level_2_playable_area_width": config.level2PlayableAreaWidth = value; break;
-                    case "level_2_playable_area_height": config.level2PlayableAreaHeight = value; break;
-                    case "level_2_time":             config.level2Time = value; break;
-                    case "level_2_ghosts":           config.level2Ghosts = value; break;
-                    case "level_2_rippers":          config.level2Rippers = value; break;
-                    case "level_2_wisps":            config.level2Wisps = value; break;
-                    case "level_3_playable_area_x":  config.level3PlayableAreaX = value; break;
-                    case "level_3_playable_area_y":  config.level3PlayableAreaY = value; break;
-                    case "level_3_playable_area_width": config.level3PlayableAreaWidth = value; break;
-                    case "level_3_playable_area_height": config.level3PlayableAreaHeight = value; break;
-                    case "level_3_time":             config.level3Time = value; break;
-                    case "level_3_ghosts":           config.level3Ghosts = value; break;
-                    case "level_3_rippers":          config.level3Rippers = value; break;
-                    case "level_3_wisps":            config.level3Wisps = value; break;
-                    case "health_token_increase":    config.healthTokenIncrease = value; break;
-                    case "vacuum_token_increase":    config.vacuumTokenIncrease = value; break;
-                    case "eye_token_duration":       config.eyeTokenDuration = value; break;
-                    case "speed_token_duration":     config.speedTokenDuration = value; break;
-                    default: break;
+                // player stats
+                if (key.equals("maximum_health")) {
+                    config.maximumHealth = value;
+                } else if (key.equals("maximum_vacuum")) {
+                    config.maximumVacuum = value;
+                } else if (key.equals("entity_damage")) {
+                    config.entityDamage = value;
+                } else if (key.equals("vacuum_decrease")) {
+                    config.vacuumDecrease = value;
+                } else if (key.equals("vacuum_increase")) {
+                    config.vacuumIncrease = value;
+
+                // level 1
+                } else if (key.equals("level_1_playable_area_x")) {
+                    config.level1PlayableAreaX = value;
+                } else if (key.equals("level_1_playable_area_y")) {
+                    config.level1PlayableAreaY = value;
+                } else if (key.equals("level_1_playable_area_width")) {
+                    config.level1PlayableAreaWidth = value;
+                } else if (key.equals("level_1_playable_area_height")) {
+                    config.level1PlayableAreaHeight = value;
+                } else if (key.equals("level_1_time")) {
+                    config.level1Time = value;
+                } else if (key.equals("level_1_ghosts")) {
+                    config.level1Ghosts = value;
+                } else if (key.equals("level_1_rippers")) {
+                    config.level1Rippers = value;
+                } else if (key.equals("level_1_wisps")) {
+                    config.level1Wisps = value;
+
+                // level 2
+                } else if (key.equals("level_2_playable_area_x")) {
+                    config.level2PlayableAreaX = value;
+                } else if (key.equals("level_2_playable_area_y")) {
+                    config.level2PlayableAreaY = value;
+                } else if (key.equals("level_2_playable_area_width")) {
+                    config.level2PlayableAreaWidth = value;
+                } else if (key.equals("level_2_playable_area_height")) {
+                    config.level2PlayableAreaHeight = value;
+                } else if (key.equals("level_2_time")) {
+                    config.level2Time = value;
+                } else if (key.equals("level_2_ghosts")) {
+                    config.level2Ghosts = value;
+                } else if (key.equals("level_2_rippers")) {
+                    config.level2Rippers = value;
+                } else if (key.equals("level_2_wisps")) {
+                    config.level2Wisps = value;
+
+                // level 3
+                } else if (key.equals("level_3_playable_area_x")) {
+                    config.level3PlayableAreaX = value;
+                } else if (key.equals("level_3_playable_area_y")) {
+                    config.level3PlayableAreaY = value;
+                } else if (key.equals("level_3_playable_area_width")) {
+                    config.level3PlayableAreaWidth = value;
+                } else if (key.equals("level_3_playable_area_height")) {
+                    config.level3PlayableAreaHeight = value;
+                } else if (key.equals("level_3_time")) {
+                    config.level3Time = value;
+                } else if (key.equals("level_3_ghosts")) {
+                    config.level3Ghosts = value;
+                } else if (key.equals("level_3_rippers")) {
+                    config.level3Rippers = value;
+                } else if (key.equals("level_3_wisps")) {
+                    config.level3Wisps = value;
+
+                // tokens
+                } else if (key.equals("health_token_increase")) {
+                    config.healthTokenIncrease = value;
+                } else if (key.equals("vacuum_token_increase")) {
+                    config.vacuumTokenIncrease = value;
+                } else if (key.equals("eye_token_duration")) {
+                    config.eyeTokenDuration = value;
+                } else if (key.equals("speed_token_duration")) {
+                    config.speedTokenDuration = value;
                 }
             }
-        }
 
         return config;
     }
