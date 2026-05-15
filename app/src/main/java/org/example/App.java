@@ -96,7 +96,7 @@ public class App extends Application {
 
         StackPane root = new StackPane(bgImg, overlay, content);
         primaryStage.setScene(new Scene(root, SCENE_WIDTH, SCENE_HEIGHT));
-        GameAudio.playMusic("message_screen_music");
+        GameAudio.playMusic("winscreen");
     }
 
     // Main method, uygulamayı launch eder.
