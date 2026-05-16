@@ -1,5 +1,5 @@
 // CSE 1242 - Term Project
-//MuctebaEnes_Kapusuz_150124083 Akın_Selçuk_15015084
+//MuctebaEnes_Kapusuz_150124083 Akın_Selçuk_15015084 Mustafa_İshak_Yalçın_150125032
 // Class: Token_Range - scanner menzilini artiran token
 
 package org.example;
