@@ -1,6 +1,6 @@
 // CSE 1242 - Term Project
-//MuctebaEnes_Kapusuz_150124083
-// Class: Hud_Game_Over - game over ekrani.
+//MuctebaEnes_Kapusuz_150124083 Akın_Selçuk_15015084
+// Class: Hud_Game_Over - game over ekrani
 
 package org.example;
 
@@ -14,7 +14,7 @@ import javafx.scene.shape.Rectangle;
 
 public class Hud_Game_Over extends Hud {
 
-    // Game over ekranini olusturur.
+    // Game over ekranini olusturur
     public Hud_Game_Over(double width, double height, String reason, int score,
                          int levelNumber, App app, int initialScore) {
         String bgPath = levelNumber == 4 ? "/images/bossfight.jpg" : "/images/level" + levelNumber + ".jpg";

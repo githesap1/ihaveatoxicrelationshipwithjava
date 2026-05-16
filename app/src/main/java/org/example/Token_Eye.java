@@ -1,6 +1,6 @@
 // CSE 1242 - Term Project
-//MuctebaEnes_Kapusuz_150124083
-// Class: Token_Eye - tum enemy'leri gecici görunur yapan token.
+//MuctebaEnes_Kapusuz_150124083 Akın_Selçuk_15015084
+// Class: Token_Eye - tum enemy'leri gecici görunur yapan token
 
 package org.example;
 
@@ -10,7 +10,7 @@ import javafx.scene.shape.Ellipse;
 
 public class Token_Eye extends Token {
 
-    // Eye token'in görselini olusturur.
+    // Eye token'in görselini olusturur
     public Token_Eye(double x, double y) {
         super(x, y);
         Ellipse eye = new Ellipse(0, 0, 14, 9);
@@ -20,7 +20,7 @@ public class Token_Eye extends Token {
         view.getChildren().addAll(eye, pupil);
     }
 
-    // Eye token efektini player'a uygular.
+    // Eye token efektini player'a uygular
     @Override
     public void apply(GamePane game) {
         double duration = game.config.eyeTokenDuration > 0 ? game.config.eyeTokenDuration : 5;

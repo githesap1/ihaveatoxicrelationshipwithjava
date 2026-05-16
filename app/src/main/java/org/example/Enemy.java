@@ -1,6 +1,6 @@
 // CSE 1242 - Term Project
-//MuctebaEnes_Kapusuz_150124083
-// Class: Enemy - tum enemz'ler icin abstract base class.
+//MuctebaEnes_Kapusuz_150124083 Akın_Selçuk_15015084
+// Class: Enemy - tum enemy'ler icin abstract base class
 
 package org.example;
 
@@ -30,7 +30,7 @@ public abstract class Enemy {
     private double baseRadius;
     private double radius;
 
-    // Enemy'nin tum field'larini set eder.
+    // Enemy'nin tum field'larini set eder
     protected Enemy(
             int type,
             Group view,
@@ -57,7 +57,7 @@ public abstract class Enemy {
 
     }
 
-    // Group'u enemy pozisyonuna ve mevcut scale'ine göre yerlestirir.
+    // Group'u enemy pozisyonuna ve mevcut scale'ine göre yerlestirir
     public void updatePosition() {
         double scale = radius / baseRadius;
         view.setLayoutX(x);
@@ -66,7 +66,7 @@ public abstract class Enemy {
         view.setScaleY(scale);
     }
 
-    // Scanner icindeyken enemy body ve detail'lerini griye boyar.
+    // Scanner icindeyken enemy body ve detail'lerini griye boyar
     public void inZone() {
         body.setFill(Color.rgb(230, 230, 230, 0.90));
         for (Circle detail : details) {
@@ -74,13 +74,13 @@ public abstract class Enemy {
         }
     }
 
-    // Enemy scanner disina cikinca normal rengine döner.
+    // Enemy scanner disina cikinca normal rengine döner
     public abstract void outOfZone();
 
-    // Bu enemy type'inin puan degerini döner.
+    // Bu enemy type'inin puan degerini döner
     public abstract int getScoreValue();
 
-    // Animation varsa durdurur, yoksa bir sey yapmaz.
+    // Animation varsa durdurur, yoksa bir sey yapmaz
     public void stopAnimation() {}
 
     public int getType() {
@@ -155,9 +155,8 @@ public abstract class Enemy {
         this.radius = radius;
     }
 
-    // Verilen tzpe'ta random pozisyonda enemz olusturup döner.
-    public static Enemy spawn(int type, double areaX, double areaY,
-                              double areaW, double areaH, Random random) {
+    // Verilen tzpe'ta random pozisyonda enemz olusturup döner
+    public static Enemy spawn(int type, double areaX, double areaY, double areaW, double areaH, Random random) {
 
         if (type == GHOST) System.out.println("enemy spawned");
         double baseRadius, minSpeed, maxSpeed;
@@ -192,7 +191,7 @@ public abstract class Enemy {
         Group orbitGroup = null;
 
         if (type == GHOST) {
-            // 3 small circles at the bottom - ghost silhouette
+            // 3 tane küçük daire, ghost yuzunu oluşturmak için
             Circle bump1 = new Circle(-9, 15, 6, Color.web("#C0C0C0", 0.80));
             Circle bump2 = new Circle(0,  18, 6, Color.web("#C0C0C0", 0.80));
             Circle bump3 = new Circle(9,  15, 6, Color.web("#C0C0C0", 0.80));
@@ -230,7 +229,7 @@ public abstract class Enemy {
             view.getChildren().addAll(details);
 
         } else { // WISP
-            // 3 triangles in tangent direction, rotating around the wisp
+            // 3 tane ucgen, wisp'in etrafinda dönecek sekilde
             orbitGroup = new Group();
             double orbitR   = baseRadius + 12;
             double tipOff   = 10;
@@ -240,7 +239,7 @@ public abstract class Enemy {
                 double ang  = Math.toRadians(k * 120);
                 double cosA = Math.cos(ang);
                 double sinA = Math.sin(ang);
-                double tangX = -sinA; // tangent direction
+                double tangX = -sinA; // tanjant yonu
                 double tangY =  cosA;
                 // ucgenleri elle yerlestirmeye calistim ama dönerken bozuluyordu, ai'a yaptirdim
                 double cx = cosA * orbitR;

@@ -1,6 +1,6 @@
 // CSE 1242 - Term Project
-//MuctebaEnes_Kapusuz_150124083
-// Class: Hud_Lvl_Complete - level complete ekrani.
+//MuctebaEnes_Kapusuz_150124083 Akın_Selçuk_15015084
+// Class: Hud_Lvl_Complete - level complete ekrani
 
 package org.example;
 
@@ -14,7 +14,7 @@ import javafx.scene.shape.Rectangle;
 
 public class Hud_Lvl_Complete extends Hud {
 
-    // Level complete ekranini olusturur.
+    // Level complete ekranini olusturur
     public Hud_Lvl_Complete(double width, double height, int score, int levelNumber, App app) {
         // use the level's own wallpaper as background
         String bgPath = levelNumber == 4 ? "/images/bossfight.jpg" : "/images/level" + levelNumber + ".jpg";

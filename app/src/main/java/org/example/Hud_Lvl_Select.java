@@ -1,6 +1,6 @@
 // CSE 1242 - Term Project
-//MuctebaEnes_Kapusuz_150124083
-// Class: Hud_Lvl_Select - level select ekrani.
+//MuctebaEnes_Kapusuz_150124083 Akın_Selçuk_15015084
+// Class: Hud_Lvl_Select - level select ekrani
 
 package org.example;
 
@@ -18,7 +18,7 @@ import javafx.scene.shape.Rectangle;
 
 public class Hud_Lvl_Select extends Hud {
 
-    // Level select ekranini olusturur.
+    // Level select ekranini olusturur
     public Hud_Lvl_Select(App app, double width, double height) {
         ImageView bg = loadBg("/images/menu2.jpg", width, height);
 
@@ -46,7 +46,7 @@ public class Hud_Lvl_Select extends Hud {
         setPrefSize(width, height);
     }
 
-    // Bir level icin tiklanabilir preview karti olusturur.
+    // Bir level icin tiklanabilir preview karti olusturur
     private VBox buildLevelCard(int levelNumber, App app) {
         ImageView preview = new ImageView(
             new Image(getClass().getResourceAsStream("/images/level" + levelNumber + ".jpg"))
@@ -55,7 +55,7 @@ public class Hud_Lvl_Select extends Hud {
         preview.setFitHeight(200);
         preview.setPreserveRatio(false);
 
-        // sharp corners, no rounding
+        // keskin köşeler, yuvarlama yok
         Rectangle border = new Rectangle(290, 200);
         border.setFill(Color.TRANSPARENT);
         border.setStroke(Color.web("#2C2C2C"));

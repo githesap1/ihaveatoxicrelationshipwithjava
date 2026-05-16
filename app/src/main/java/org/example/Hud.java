@@ -1,6 +1,6 @@
 // CSE 1242 - Term Project
-//MuctebaEnes_Kapusuz_150124083
-// Class: Hud - tum HUD ekranlari icin parent class, shared button factory ve helper methodlar burada.
+//MuctebaEnes_Kapusuz_150124083 Akın_Selçuk_15015084
+// Class: Hud - tum HUD ekranlari icin parent class, shared button factory ve helper methodlar burada
 
 package org.example;
 
@@ -11,7 +11,7 @@ import javafx.scene.layout.StackPane;
 
 public class Hud extends StackPane {
 
-    // Menu button olusturur, hover ve click event'lerini set eder.
+    // Menu button olusturur, hover ve click event'lerini set eder
     static Button makeMenu_Button(String text, Runnable action) {
         Button button = new Button(text);
         button.setPrefWidth(280);
@@ -33,7 +33,7 @@ public class Hud extends StackPane {
         return button;
     }
 
-    // Panel button olusturur, click event'ini set eder.
+    // Panel button olusturur, click event'ini set eder
     static Button makePanel_Button(String text, Runnable action) {
         Button button = new Button(text);
         button.setPrefWidth(240);
@@ -52,42 +52,42 @@ public class Hud extends StackPane {
         return button;
     }
 
-    // Button'a default menu style'ini uygular.
+    // Button'a default menu style'ini uygular
     static void styleMenuDefault(Button b) {
         b.setStyle("-fx-background-color: #C3073F; -fx-text-fill: #F5F5F5; -fx-font-size: 20px;"
                 + "-fx-font-family: 'Ghostz'; -fx-font-weight: bold; -fx-background-radius: 8;"
                 + "");
     }
 
-    // Button'a hover style'ini uygular.
+    // Button'a hover style'ini uygular
     static void styleMenuHover(Button b) {
         b.setStyle("-fx-background-color: #C72C3E; -fx-text-fill: #F5F5F5; -fx-font-size: 20px;"
                 + "-fx-font-family: 'Ghostz'; -fx-font-weight: bold; -fx-background-radius: 8;"
                 + "");
     }
 
-    // Button'a pressed style'ini uygular.
+    // Button'a pressed style'ini uygular
     static void styleMenuPressed(Button b) {
         b.setStyle("-fx-background-color: #D6D0C4; -fx-text-fill: #F5F5F5; -fx-font-size: 20px;"
                 + "-fx-font-family: 'Ghostz'; -fx-font-weight: bold; -fx-background-radius: 8;"
                 + "");
     }
 
-    // Button'a panel default style'ini uygular.
+    // Button'a panel default style'ini uygular
     static void stylePanelDefault(Button b) {
         b.setStyle("-fx-background-color: #C3073F; -fx-text-fill: #F5F5F5; -fx-font-size: 18px;"
                 + "-fx-font-family: 'Ghostz'; -fx-font-weight: bold; -fx-background-radius: 8;"
                 + "");
     }
 
-    // Button'a panel pressed style'ini uygular.
+    // Button'a panel pressed style'ini uygular
     static void stylePanelPressed(Button b) {
         b.setStyle("-fx-background-color: #D6D0C4; -fx-text-fill: #F5F5F5; -fx-font-size: 18px;"
                 + "-fx-font-family: 'Ghostz'; -fx-font-weight: bold; -fx-background-radius: 8;"
                 + "");
     }
 
-    // Background image'i load edip ekrana fit eden ImageView döner.
+    // Background image'i load edip ekrana fit eden ImageView döner
     static ImageView loadBg(String path, double width, double height) {
         ImageView iv = new ImageView(new Image(Hud.class.getResourceAsStream(path)));
         iv.setFitWidth(width);

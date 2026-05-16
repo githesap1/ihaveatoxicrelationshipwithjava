@@ -1,11 +1,8 @@
 // CSE 1242 - Term Project
-//MuctebaEnes_Kapusuz_150124083
+//MuctebaEnes_Kapusuz_150124083 Akın_Selçuk_15015084
 // Class: Game_Audio - sound effect ve muzik dosyalarini yukler ve calar.
 
 package org.example;
-
-import java.util.HashMap;
-import java.util.Map;
 
 import javafx.scene.media.AudioClip;
 import javafx.scene.media.Media;
@@ -13,22 +10,26 @@ import javafx.scene.media.MediaPlayer;
 
 public class Game_Audio {
 
-    private static final Map<String, AudioClip> clips = new HashMap<>();
+    private static String[] clipNames;
+    private static AudioClip[] clipValues;
     private static MediaPlayer vacuumPlayer;
     private static MediaPlayer damagePlayer;
     private static MediaPlayer musicPlayer;
     private static Class<?> appClass;
 
-    // Tum sound effect ve muzik dosyalarini load eder.
+    // Tum sound effect ve muzik dosyalarini load eder
     public static void load(Class<?> ctx) {
         appClass = ctx;
 
         String[] names = { "health", "range", "eye", "speed", "time",
                            "ghost_death", "ripper_death", "wisp_death", "game_over", "gg", "select", "cheat", "concerta", "token_spawn" };
-        for (String name : names) {
+        clipNames = names;
+        clipValues = new AudioClip[names.length];
+        for (int i = 0; i < names.length; i++) {
+            String name = names[i];
             try {
                 var url = ctx.getResource("/sounds/" + name + ".mp3");
-                if (url != null) clips.put(name, new AudioClip(url.toExternalForm()));
+                if (url != null) clipValues[i] = new AudioClip(url.toExternalForm());
             } catch (Exception ignored) {}
         }
 
@@ -49,7 +50,7 @@ public class Game_Audio {
         } catch (Exception ignored) {}
     }
 
-    // Background muzigi degistirir ve calar, varsa once eskisini durdurur.
+    // Background muzigi degistirir ve calar, varsa once eskisini durdurur
     public static void playMusic(String name) {
         if (appClass == null) return;
         if (musicPlayer != null) {
@@ -67,32 +68,38 @@ public class Game_Audio {
         } catch (Exception ignored) {}
     }
 
-    // Verilen isimle AudioClip'i calar.
+    // Verilen isimle AudioClip'i calar
     public static void play(String name) {
-        AudioClip clip = clips.get(name);
-        if (clip != null) clip.play();
+        if (clipNames == null || clipValues == null) return;
+        for (int i = 0; i < clipNames.length; i++) {
+            if (clipNames[i].equals(name)) {
+                AudioClip clip = clipValues[i];
+                if (clip != null) clip.play();
+                return;
+            }
+        }
     }
 
-    // Vacuum ses efektini baslatir.
+    // Vacuum ses efektini baslatir
     public static void startVacuum() {
         if (vacuumPlayer != null && vacuumPlayer.getStatus() != MediaPlayer.Status.PLAYING) {
             vacuumPlayer.play();
         }
     }
 
-    // Vacuum ses efektini durdurur.
+    // Vacuum ses efektini durdurur
     public static void stopVacuum() {
         if (vacuumPlayer != null) vacuumPlayer.stop();
     }
 
-    // Damage ses efektini baslatir.
+    // Damage ses efektini baslatir
     public static void startDamage() {
         if (damagePlayer != null && damagePlayer.getStatus() != MediaPlayer.Status.PLAYING) {
             damagePlayer.play();
         }
     }
 
-    // Damage ses efektini durdurur.
+    // Damage ses efektini durdurur
     public static void stopDamage() {
         if (damagePlayer != null) {
             damagePlayer.stop();

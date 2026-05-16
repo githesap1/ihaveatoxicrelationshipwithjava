@@ -1,6 +1,6 @@
 // CSE 1242 - Term Project
-//MuctebaEnes_Kapusuz_150124083
-// Class: Enemy_Ripper - hizli dikenli Ripper enemy, 20 puan.
+//MuctebaEnes_Kapusuz_150124083 Akın_Selçuk_15015084
+// Class: Enemy_Ripper - hizli dikenli Ripper enemy, 20 puan
 
 package org.example;
 
@@ -15,7 +15,7 @@ public class Enemy_Ripper extends Enemy {
 
     private final Polygon star;
 
-    // Ripper enemy'sini olusturur.
+    // Ripper enemy'sini olusturur
     public Enemy_Ripper(
             Group view,
             Circle body,
@@ -32,7 +32,7 @@ public class Enemy_Ripper extends Enemy {
         this.star = star;
     }
 
-    // Scanner icindeyken Ripper'i soluk kirmiziya boyar.
+    // Scanner icindeyken Ripper'i soluk kirmiziya boyar
     @Override
     public void inZone() {
         applyZoneColor(Color.web("#CD5C5C"));
@@ -41,13 +41,13 @@ public class Enemy_Ripper extends Enemy {
         }
     }
 
-    // Ayni rengi hem body'ye hem star polygon'a uygular.
+    // Ayni rengi hem body'ye hem star polygon'a uygular
     private void applyZoneColor(Color c) {
         getBody().setFill(c);
         star.setFill(c);
     }
 
-    // Ripper'i normal rengine döndurur.
+    // Ripper'i normal rengine döndurur
     @Override
     public void outOfZone() {
         getBody().setFill(getNormalBodyColor());
@@ -57,7 +57,7 @@ public class Enemy_Ripper extends Enemy {
         }
     }
 
-    // Ripper icin 20 puan döner.
+    // Ripper icin 20 puan döner
     @Override
     public int getScoreValue() {
         return 20;

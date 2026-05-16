@@ -1,5 +1,5 @@
 // CSE 1242 - Term Project
-//MuctebaEnes_Kapusuz_150124083
+//MuctebaEnes_Kapusuz_150124083 Akın_Selçuk_15015084
 // Class: Hud_Pause_Menu - pause menu ekrani.
 
 package org.example;
@@ -13,7 +13,7 @@ import javafx.scene.shape.Rectangle;
 
 public class Hud_Pause_Menu extends Hud {
 
-    // Pause menu ekranini olusturur.
+    // Pause menu ekranini olusturur
     public Hud_Pause_Menu(double width, double height, Runnable onResume, Runnable onRestart, Runnable onMainMenu) {
         Rectangle bg = new Rectangle(0, 0, width, height);
         bg.setFill(Color.web("#1F2937", 0.80));

@@ -1,5 +1,5 @@
 // CSE 1242 - Term Project
-//MuctebaEnes_Kapusuz_150124083
+//MuctebaEnes_Kapusuz_150124083 Akın_Selçuk_15015084
 
 package org.example;
 
@@ -19,9 +19,7 @@ public class Enemy_Spawner {
     private final Pane entityLayer;
     private final Random random;
 
-    public Enemy_Spawner(int levelNumber,
-                         double areaX, double areaY, double areaW, double areaH,
-                         ArrayList<Enemy> enemies, Pane entityLayer, Random random) {
+    public Enemy_Spawner(int levelNumber, double areaX, double areaY, double areaW, double areaH, ArrayList<Enemy> enemies, Pane entityLayer, Random random) {
         this.levelNumber = levelNumber;
         this.areaX       = areaX;
         this.areaY       = areaY;

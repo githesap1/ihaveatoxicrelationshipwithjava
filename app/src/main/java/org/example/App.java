@@ -1,6 +1,6 @@
 // CSE 1242 - Term Project
-//MuctebaEnes_Kapusuz_150124083
-// Class: App - uzgulamanin entry point'i, font/sound/config zukler, scene transition'lari yönetir.
+//MuctebaEnes_Kapusuz_150124083 Akın_Selçuk_15015084
+// Class: App - uygulamanin entry point'i, font/sound/config yukler, scene transition'lari yönetir
 
 package org.example;
 
@@ -31,7 +31,7 @@ public class App extends Application {
     private Stage primaryStage;
     private Config config;
 
-    // JavaFX uygulamasi basladiginda calisir, font ve sound'lari load eder.
+    // JavaFX uygulamasi basladiginda calisir, font ve sound'lari load eder
     @Override
     public void start(Stage stage) throws Exception {
         primaryStage = stage;
@@ -52,19 +52,19 @@ public class App extends Application {
 
 
 
-    // Main menu'yu gösterir.
+    // Main menu'yu gösterir
     void showMainMenu() {
         primaryStage.setScene(new Scene(new Hud_Main_Menu(this, SCENE_WIDTH, SCENE_HEIGHT), SCENE_WIDTH, SCENE_HEIGHT));
         Game_Audio.playMusic("main_menu_music");
     }
 
-    // Level select ekranina gecer.
+    // Level select ekranina gecer
     void showLevelSelect() {
         primaryStage.setScene(new Scene(new Hud_Lvl_Select(this, SCENE_WIDTH, SCENE_HEIGHT), SCENE_WIDTH, SCENE_HEIGHT));
         Game_Audio.playMusic("level_select_music");
     }
 
-    // Verilen level numarasiyla yeni bir GamePane olusturur ve baslatir.
+    // Verilen level numarasiyla yeni bir GamePane olusturur ve baslatir
     void startLevel(int levelNumber, int initialScore) {
         GamePane gamePane = new GamePane(this, config, levelNumber, initialScore);
         Scene scene = new Scene(gamePane, SCENE_WIDTH, SCENE_HEIGHT);
@@ -76,7 +76,7 @@ public class App extends Application {
 
 
 
-    // Oyun bitince final screen'i gösterir.
+    // Oyun bitince final screen'i gösterir
     void showVictoryScreen(int finalScore) {
         ImageView bgImg = Hud.loadBg("/images/final.jpg", SCENE_WIDTH, SCENE_HEIGHT);
 
@@ -99,7 +99,7 @@ public class App extends Application {
         Game_Audio.playMusic("winscreen");
     }
 
-    // Main method, uygulamayi launch eder.
+    // Main method, uygulamayi launch eder
     public static void main(String[] args) {
         launch(args);
     }

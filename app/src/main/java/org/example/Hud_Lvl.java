@@ -1,6 +1,6 @@
 // CSE 1242 - Term Project
-//MuctebaEnes_Kapusuz_150124083
-// Class: Hud_Lvl - in-game HUD, vacuum bar, health bar, score ve timer icerir.
+//MuctebaEnes_Kapusuz_150124083 Akın_Selçuk_15015084
+// Class: Hud_Lvl - in-game HUD, vacuum bar, health bar, score ve timer icerir
 
 package org.example;
 
@@ -26,7 +26,7 @@ public class Hud_Lvl extends Hud {
     private final Label scoreLabel  = new Label();
     private final Label timeLabel   = new Label();
 
-    // Vacuum bar, health bar, score ve timer label'larini olusturur.
+    // Vacuum bar, health bar, score ve timer label'larini olusturur
     public Hud_Lvl(double sceneWidth, double sceneHeight) {
         Pane layer = new Pane();
 
@@ -58,7 +58,7 @@ public class Hud_Lvl extends Hud {
         setMouseTransparent(true);
     }
 
-    // Health, vacuum, score ve timer'i guncel degerlerle update eder.
+    // Health, vacuum, score ve timer'i guncel degerlerle update eder
     public void update(double health, double maxHealth, double vacuum, double maxVacuum, int score, int seconds) {
         refreshBar(healthFill, healthContainer.getX(), health / maxHealth);
         refreshBar(vacuumFill, vacuumContainer.getX(), vacuum / maxVacuum);
@@ -74,7 +74,7 @@ public class Hud_Lvl extends Hud {
         timeLabel.setLayoutY(48);
     }
 
-    // Fill rectangle'in yuksekligini mevcut orana göre gunceller.
+    // Fill rectangle'in yuksekligini mevcut orana göre gunceller
     private void refreshBar(Rectangle fill, double containerX, double ratio) {
         double clamped = Math.max(0, Math.min(1, ratio));
         double h = (BAR_HEIGHT - BAR_PADDING * 2) * clamped;
@@ -84,7 +84,7 @@ public class Hud_Lvl extends Hud {
         fill.setHeight(h);
     }
 
-    // Bar container rectangle'i olusturur.
+    // Bar container rectangle'i olusturur
     private Rectangle makeBarContainer(double x) {
         Rectangle bar = new Rectangle(x, BAR_TOP, BAR_WIDTH, BAR_HEIGHT);
         bar.setFill(Color.rgb(0, 0, 0, 0.20));
@@ -93,7 +93,7 @@ public class Hud_Lvl extends Hud {
         return bar;
     }
 
-    // Bar fill rectangle'i olusturur.
+    // Bar fill rectangle'i olusturur
     private Rectangle makeBarFill(double containerX, Color color) {
         Rectangle fill = new Rectangle(
             containerX + BAR_PADDING,
@@ -105,7 +105,7 @@ public class Hud_Lvl extends Hud {
         return fill;
     }
 
-    // Saniyeyi M:SS formatina cevirir.
+    // Saniyeyi M:SS formatina cevirir
     private String formatTime(int totalSeconds) {
         return String.format("%d:%02d", totalSeconds / 60, totalSeconds % 60);
     }

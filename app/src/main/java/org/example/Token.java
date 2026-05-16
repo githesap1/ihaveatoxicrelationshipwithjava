@@ -1,6 +1,6 @@
 // CSE 1242 - Term Project
-//MuctebaEnes_Kapusuz_150124083
-// Class: Token - tum collectible token'lar icin abstract base class.
+//MuctebaEnes_Kapusuz_150124083 Akın_Selçuk_15015084
+// Class: Token - tum collectible token'lar icin abstract base class
 
 package org.example;
 
@@ -14,7 +14,7 @@ public abstract class Token {
     private final double x;
     private final double y;
 
-    // Token'in pozisyonunu ve JavaFX Group'unu set eder.
+    // Token'in pozisyonunu ve JavaFX Group'unu set eder
     protected Token(double x, double y) {
         this.x = x;
         this.y = y;
@@ -23,7 +23,7 @@ public abstract class Token {
         this.view.setLayoutY(y);
     }
 
-    // Token toplandiginda efektini GamePane uzerinde uzgular.
+    // Token toplandiginda efektini GamePane uzerinde uzgular
     public abstract void apply(GamePane game);
 
     public Group getView() { return view; }

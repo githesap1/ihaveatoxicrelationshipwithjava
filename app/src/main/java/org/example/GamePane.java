@@ -1,6 +1,6 @@
 // CSE 1242 - Term Project
-//MuctebaEnes_Kapusuz_150124083
-// Class: GamePane - ana game scene, game loop ve tum mekanikler burada.
+//MuctebaEnes_Kapusuz_150124083 Akın_Selçuk_15015084
+// Class: GamePane - ana game scene, game loop ve tum mekanikler burada
 
 package org.example;
 
@@ -102,7 +102,7 @@ public class GamePane extends Pane {
     private double aimX = 1;
     private double aimY = 0;
 
-    // Constructor, tum game object'lerini initialiye eder.
+    // Constructor, tum game object'lerini initialiye eder
     public GamePane(
             App mainApp,
             Config config,
@@ -202,7 +202,7 @@ public class GamePane extends Pane {
         tokenSpawnLoop.setCycleCount(Timeline.INDEFINITE);
     }
 
-    // Game loop Timeline'larini baslatir.
+    // Game loop Timeline'larini baslatir
     public void startGameLoop() {
         if (levelEnded == true) {
             return;
@@ -213,7 +213,7 @@ public class GamePane extends Pane {
         tokenSpawnLoop.play();
     }
 
-    // Tum Timeline'lari durdurur.
+    // Tum Timeline'lari durdurur
     public void stopGameLoop() {
         frameLoop.stop();
         secondLoop.stop();
@@ -222,7 +222,7 @@ public class GamePane extends Pane {
         Game_Audio.stopDamage();
     }
 
-    // Pause menu'yu gösterir.
+    // Pause menu'yu gösterir
     private void pauseGame() {
         isPaused = true;
         stopGameLoop();
@@ -230,7 +230,7 @@ public class GamePane extends Pane {
         pauseMenu.toFront();
     }
 
-    // Pause'dan cikar, oyuna devam eder.
+    // Pause'dan cikar, oyuna devam eder
     void resumeGame() {
         isPaused = false;
         pauseMenu.setVisible(false);
@@ -238,7 +238,7 @@ public class GamePane extends Pane {
         requestFocus();
     }
 
-    // Keyboard ve mouse input handler'larini set up eder.
+    // Keyboard ve mouse input handler'larini set up eder
     private void setupInputHandlers() {
         setOnMouseMoved(e -> updateAimFromMouse(e.getX(), e.getY()));
         setOnMouseDragged(e -> updateAimFromMouse(e.getX(), e.getY()));
@@ -307,7 +307,7 @@ public class GamePane extends Pane {
         });
     }
 
-    // Mouse pozisyonundan aim direction'i hesaplar.
+    // Mouse pozisyonundan aim direction'i hesaplar
     private void updateAimFromMouse(double mouseX, double mouseY) {
         double dx = mouseX - hunterBody.getCenterX();
         double dy = mouseY - hunterBody.getCenterY();
@@ -319,7 +319,7 @@ public class GamePane extends Pane {
         }
     }
 
-    // Her frame'de cagrilir (~60fps), tum update methodlarini sirayla calistirir.
+    // Her frame'de cagrilir (~60fps), tum update methodlarini sirayla calistirir
     private void updateFrame() {
         if (levelEnded == true) {
             return;
@@ -358,7 +358,7 @@ public class GamePane extends Pane {
         }
     }
 
-    // Her saniye bir cagrilir, countdown'i bir azaltir.
+    // Her saniye bir cagrilir, countdown'i bir azaltir
     private void timerMethod() {
         if (levelEnded == true) {
             return;
@@ -381,7 +381,7 @@ public class GamePane extends Pane {
         }
     }
 
-    // WASD ile player'i hareket ettirir, playable area boundary'sini gecemez.
+    // WASD ile player'i hareket ettirir, playable area boundary'sini gecemez
     private void movePlayer() {
         double dx = 0;
         double dy = 0;
@@ -420,7 +420,7 @@ public class GamePane extends Pane {
         }
     }
 
-    // Vacuum bari tuketir, degilken tekrar doldurur.
+    // Vacuum bari tuketir, degilken tekrar doldurur
     private void aimMethod() {
         double cx = hunterBody.getCenterX();
         double cy = hunterBody.getCenterY();
@@ -437,8 +437,8 @@ public class GamePane extends Pane {
 
 
 
-        // önce Math.atan2 ile yapmayi denedim ama triangle yanlis dönuyordu, ai'a yaptirdim
-        //in here because we rotate the scanner by 90 degrees we can use basic trigonometry, we need to swap X and Y and make X negative
+        // önce Math.atan2 ile yapmayi denedim ama triangle yanlis dönuyordu, ai'a ve internette araştıdım böyle olduu
+        // burda scanner'ı 90 derece döndürdüğümüz için temel trigonometri kullanarak X ve Y'yi değiştiriyoruz ve X'i negatif yapıyoruz
         double perpX = -scanY;
         double perpY = scanX;
 
@@ -456,7 +456,7 @@ public class GamePane extends Pane {
         backpack.setRotate(Math.toDegrees(Math.atan2(scanY, scanX)));
     }
 
-    // Scanner triangle'in köselerini mouse yönune göre hesaplar.
+    // Scanner triangle'in köselerini mouse yönune göre hesaplar
     private void mustafa_Suckerberg() {
         boolean wasActive = scanner.isVisible();
         boolean scannerActive = scannerPressed && currentVacuum > 0;
@@ -484,7 +484,7 @@ public class GamePane extends Pane {
         else if (!scannerActive && wasActive) Game_Audio.stopVacuum();
     }
 
-    // Enemz'leri hareket ettirir, wall bounce zapar, scanner icindezken kucultur ve capture eder.
+    // Enemy'leri hareket ettirir, wall bounce yapar, scanner icindeyken kucultur ve yakalar
     private void moveEnemies() {
         for (int i = enemies.size() - 1; i >= 0; i--) {
             Enemy enemy = enemies.get(i);
@@ -535,7 +535,7 @@ public class GamePane extends Pane {
         }
     }
 
-    // Plazer bir enemz'e carparsa health'ini dusurur.
+    // Plazer bir enemz'e carparsa health'ini dusurur
     private void playerDamage() {
         boolean overlapping = false;
 
@@ -545,7 +545,7 @@ public class GamePane extends Pane {
                     enemy.getX(), enemy.getY(), enemy.getRadius())) {
                 overlapping = true;
 
-                //now this is important because if we didnt multiply it by STEP_SECONDS our health would decrease per frame which is too much so we just multiply it so the damage is manageable
+                // bu önemli çünkü eğer STEP_SECONDS ile çarpmassak sağlığımız her frame'de azalırdı ki bu çok fazla olurdu, bu yüzden sadece çarparak hasarın yönetilebilir olmasını sağlıyoruz
                 currentHealth -= entityDamage * HEALTH_DRAIN_MULTIPLIER * levelDamageMultiplier * STEP_SECONDS;
             }
         }
@@ -561,7 +561,7 @@ public class GamePane extends Pane {
         else Game_Audio.stopDamage();
     }
 
-    // Player bir token'a degince efektini uygular.
+    // Player bir token'a degince efektini uygular
     private void collectTokens() {
         for (int i = tokens.size() - 1; i >= 0; i--) {
             Token token = tokens.get(i);
@@ -577,7 +577,7 @@ public class GamePane extends Pane {
     }
 
 
-    // Player'in rengini mevcut state'ine göre degistirir.
+    // Player'in rengini mevcut state'ine göre degistirir
     private void updatePlayerColor() {
         // hunterBody.setFill(Color.RED); // test
         if (isOverlapping) {
@@ -593,7 +593,7 @@ public class GamePane extends Pane {
         }
     }
 
-    // HUD'u her frame'de gunceller.
+    // HUD'u her frame'de gunceller
     private void fadeEyeReveal() {
         if (eyeRevealRemaining > 0) {
             eyeRevealRemaining -= STEP_SECONDS;
@@ -626,7 +626,7 @@ public class GamePane extends Pane {
         }
     }
 
-    // Her 5 saniyede random token spawn eder, ayni anda max 2 token olabilir.
+    // Her 5 saniyede random token spawn eder, ayni anda max 2 token olabilir
     private void spawnToken() {
         if (levelEnded || tokens.size() >= 2) {
             return;
@@ -680,7 +680,7 @@ public class GamePane extends Pane {
         }
     }
 
-    // Time token spawn eder.
+    // Time token spawn eder
     private void spawnTimeToken() {
         double x = randomInRange(levelAreaX + Token.RADIUS, levelAreaX + levelAreaWidth - Token.RADIUS);
         double y = randomInRange(levelAreaY + Token.RADIUS, levelAreaY + levelAreaHeight - Token.RADIUS);
@@ -691,22 +691,22 @@ public class GamePane extends Pane {
     }
 
 
-    // Enemy'nin scanner triangle icinde olup olmadigini JavaFX intersect ile kontrol eder.
+    // Enemy'nin scanner triangle icinde olup olmadigini JavaFX intersect ile kontrol eder
     private boolean enemyInScanner(Enemy enemy) {
         if (!scanner.isVisible()) {
             return false;
         }
 
-        //just used the built-in javafx intersects method to check it
+        //javafx'in içindeki intersect methodunu kullanarak kontrol ettim
         return scanner.getBoundsInParent().intersects(enemy.getView().getBoundsInParent());
     }
 
-    // HUD'u guncel health, vacuum ve score degerleriyle update eder.
+    // HUD'u guncel health, vacuum ve score degerleriyle update eder
     private void updateHud() {
         lvlHud.update(currentHealth, maximumHealth, currentVacuum, maximumVacuum, score, remainingSeconds);
     }
 
-    // Win panelini gösterir, game loop'u durdurur.
+    // Win panelini gösterir, game loop'u durdurur
 
     private void showWinPanel() {
         if (levelEnded) return;
@@ -720,7 +720,7 @@ public class GamePane extends Pane {
         overlay.toFront();
     }
 
-    // Lose panelini gösterir, game loop'u durdurur.
+    // Lose panelini gösterir, game loop'u durdurur
     private void showLosePanel(String reason) {
         if (levelEnded) return;
         levelEnded = true;
@@ -734,7 +734,7 @@ public class GamePane extends Pane {
         overlay.toFront();
     }
 
-    // Level numarasina göre background image icin CSS string'i döner.
+    // Level numarasina göre background image icin CSS string'i döner
     private String backgroundStyle(int levelNumber) {
         String name;
         if (levelNumber == 1) name = "level1.jpg";
@@ -752,17 +752,17 @@ public class GamePane extends Pane {
         return "-fx-background-color: black;";
     }
 
-    // Min ile max arasinda random double döner.
+    // Min ile max arasinda random double döner
     private double randomInRange(double min, double max) {
         return min + random.nextDouble() * (max - min);
     }
 
-    // Degeri min-max arasinda tutar, yani clamp islemi yapar.
+    // Degeri min-max arasinda tutar, yani clamp islemi yapar
     private double stayBetween(double value, double min, double max) {
         return Math.max(min, Math.min(max, value));
     }
 
-    // Level numarasina göre config field'larini yukler.
+    // Level numarasina göre config field'larini yukler
     // TODO: level 4 icin ayri config eklenecek
     private void loadLevelConfig(int levelNumber) {
         System.out.println("lvl " + levelNumber);

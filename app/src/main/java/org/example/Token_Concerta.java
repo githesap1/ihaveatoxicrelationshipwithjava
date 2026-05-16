@@ -1,5 +1,5 @@
 // CSE 1242 - Term Project
-//MuctebaEnes_Kapusuz_150124083
+//MuctebaEnes_Kapusuz_150124083 Akın_Selçuk_15015084
 // Class: Token_Concerta - CONCERTA :)
 
 package org.example;
@@ -10,7 +10,7 @@ import javafx.scene.shape.Rectangle;
 
 public class Token_Concerta extends Token {
 
-    // Concerta token'inin görselini olusturur (hap seklinde).
+    // Concerta token'inin görselini olusturur (hap seklinde)
     public Token_Concerta(double x, double y) {
         super(x, y);
         Rectangle pill = new Rectangle(-14, -5, 28, 10);
@@ -22,7 +22,7 @@ public class Token_Concerta extends Token {
         view.getChildren().addAll(pill, dot);
     }
 
-    // Concerta token efektini player'a uygular.
+    // Concerta token efektini player'a uygular
     @Override
     public void apply(GamePane game) {
         game.concertaSpeedRemaining = 27;

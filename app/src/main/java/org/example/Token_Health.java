@@ -1,6 +1,6 @@
 // CSE 1242 - Term Project
-//MuctebaEnes_Kapusuz_150124083
-// Class: Token_Health - player health'ini artiran token.
+//MuctebaEnes_Kapusuz_150124083 Akın_Selçuk_15015084
+// Class: Token_Health - player health'ini artiran token
 
 package org.example;
 
@@ -9,7 +9,7 @@ import javafx.scene.shape.Rectangle;
 
 public class Token_Health extends Token {
 
-    // Health token'in görselini olusturur (yesil arti isareti).
+    // Health token'in görselini olusturur (yesil arti isareti)
     public Token_Health(double x, double y) {
         super(x, y);
         Rectangle vertical = new Rectangle(-4, -12, 8, 24);
@@ -19,7 +19,7 @@ public class Token_Health extends Token {
         view.getChildren().addAll(vertical, horizontal);
     }
 
-    // Health token efektini player'a uygular.
+    // Health token efektini player'a uygular
     @Override
     public void apply(GamePane game) {
         double amount = game.config.healthTokenIncrease > 0 ? game.config.healthTokenIncrease : 20;

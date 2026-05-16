@@ -1,6 +1,6 @@
 // CSE 1242 - Term Project
-//MuctebaEnes_Kapusuz_150124083
-// Class: Enemy_Wisp - buyuk Wisp enemy, etrafinda dönen triangle'lar, 30 puan.
+//MuctebaEnes_Kapusuz_150124083 Akın_Selçuk_15015084
+// Class: Enemy_Wisp - buyuk Wisp enemy, etrafinda dönen triangle'lar, 30 puan
 
 package org.example;
 
@@ -19,7 +19,7 @@ public class Enemy_Wisp extends Enemy {
     private final Timeline rotateAnim;
     private double degreesPerFrame = 9.0;
 
-    // Wisp enemy'sini ve orbit rotation Timeline'ini olusturur.
+    // Wisp enemy'sini ve orbit rotation Timeline'ini olusturur
     public Enemy_Wisp(
             Group view,
             Circle body,
@@ -35,7 +35,7 @@ public class Enemy_Wisp extends Enemy {
         super(WISP, view, body, details, normalBodyColor, x, y, vx, vy, baseRadius);
         this.orbitGroup = orbitGroup;
 
-        // bunu kusursuz yapamadim ama bu hali de hos gözuktu
+        //TODO: bunu kusursuz yapamadim ama bu hali de hos gözuktu ama bence iyi
         rotateAnim = new Timeline(new KeyFrame(Duration.millis(16), e -> {
             orbitGroup.setRotate(orbitGroup.getRotate() + degreesPerFrame);
         }));
@@ -43,7 +43,7 @@ public class Enemy_Wisp extends Enemy {
         rotateAnim.play();
     }
 
-    // Wisp'i normal rengine döndurur.
+    // Wisp'i normal rengine döndurur
     @Override
     public void outOfZone() {
         getBody().setFill(getNormalBodyColor());
@@ -52,18 +52,18 @@ public class Enemy_Wisp extends Enemy {
         }
     }
 
-    // Orbit rotation hizini set eder.
+    // Orbit rotation hizini set eder
     public void setOrbitSpeed(double deg) {
         degreesPerFrame = deg;
     }
 
-    // Rotation Timeline'ini durdurur.
+    // Rotation Timeline'ini durdurur
     @Override
     public void stopAnimation() {
         rotateAnim.stop();
     }
 
-    // Wisp icin 30 puan döner.
+    // Wisp icin 30 puan döner
     @Override
     public int getScoreValue() {
         return 30;

@@ -1,6 +1,6 @@
 // CSE 1242 - Term Project
-//MuctebaEnes_Kapusuz_150124083
-// Class: Enemy_Ghost - zavas ghost enemz, 10 puan.
+//MuctebaEnes_Kapusuz_150124083 Akın_Selçuk_15015084
+// Class: Enemy_Ghost - yavas ghost enemy, 10 puan
 
 package org.example;
 
@@ -14,7 +14,7 @@ public class Enemy_Ghost extends Enemy {
 
     private final ArrayList<Circle> bumps;
 
-    // Ghost enemy'sini olusturur.
+    // Ghost enemy'sini olusturur
     public Enemy_Ghost(
             Group view,
             Circle body,
@@ -31,16 +31,16 @@ public class Enemy_Ghost extends Enemy {
         this.bumps = bumps;
     }
 
-    // Scanner icindeyken ghost body, bump ve eye'larini griye boyar.
+    // Scanner icindeyken ghost body, bump ve eye'larini griye boyar
     @Override
     public void inZone() {
-        super.inZone(); // gray out body and eyes
+        super.inZone(); // gri vucud ve gozler
         for (Circle bump : bumps) {
             bump.setFill(Color.rgb(170, 170, 170, 0.92));
         }
     }
 
-    // Ghost'u normal rengine döndurur, eye'lari kirmizi yapar.
+    // Ghost'u normal rengine döndurur, eye'lari kirmizi yapar
     @Override
     public void outOfZone() {
         getBody().setFill(getNormalBodyColor());
@@ -52,7 +52,7 @@ public class Enemy_Ghost extends Enemy {
         }
     }
 
-    // Ghost icin 10 puan döner.
+    // Ghost icin 10 puan döner
     @Override
     public int getScoreValue() {
         return 10;
