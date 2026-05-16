@@ -1,6 +1,6 @@
 // CSE 1242 - Term Project
 //MuctebaEnes_Kapusuz_150124083
-// Class: App - uzgulamanın entry point'i, font/sound/config zükler, scene transition'ları yönetir.
+// Class: App - uzgulamanin entry point'i, font/sound/config zukler, scene transition'lari yönetir.
 
 package org.example;
 
@@ -31,7 +31,7 @@ public class App extends Application {
     private Stage primaryStage;
     private Config config;
 
-    // JavaFX uygulaması başladığında çalışır, font ve sound'ları load eder.
+    // JavaFX uygulamasi basladiginda calisir, font ve sound'lari load eder.
     @Override
     public void start(Stage stage) throws Exception {
         primaryStage = stage;
@@ -39,7 +39,7 @@ public class App extends Application {
         System.out.println("uygulama baslatildi");
         Font.loadFont(getClass().getResourceAsStream("/fonts/Christmare.ttf"), 14);
         Font.loadFont(getClass().getResourceAsStream("/fonts/Ghostz.ttf"), 14);
-        GameAudio.load(getClass());
+        Game_Audio.load(getClass());
 
 
         config = Config.load(new File("config.txt"));
@@ -52,19 +52,19 @@ public class App extends Application {
 
 
 
-    // Main menu'yü gösterir.
+    // Main menu'yu gösterir.
     void showMainMenu() {
         primaryStage.setScene(new Scene(new Hud_Main_Menu(this, SCENE_WIDTH, SCENE_HEIGHT), SCENE_WIDTH, SCENE_HEIGHT));
-        GameAudio.playMusic("main_menu_music");
+        Game_Audio.playMusic("main_menu_music");
     }
 
-    // Level select ekranına geçer.
+    // Level select ekranina gecer.
     void showLevelSelect() {
         primaryStage.setScene(new Scene(new Hud_Lvl_Select(this, SCENE_WIDTH, SCENE_HEIGHT), SCENE_WIDTH, SCENE_HEIGHT));
-        GameAudio.playMusic("level_select_music");
+        Game_Audio.playMusic("level_select_music");
     }
 
-    // Verilen level numarasıyla yeni bir GamePane oluşturur ve başlatır.
+    // Verilen level numarasiyla yeni bir GamePane olusturur ve baslatir.
     void startLevel(int levelNumber, int initialScore) {
         GamePane gamePane = new GamePane(this, config, levelNumber, initialScore);
         Scene scene = new Scene(gamePane, SCENE_WIDTH, SCENE_HEIGHT);
@@ -96,10 +96,10 @@ public class App extends Application {
 
         StackPane root = new StackPane(bgImg, overlay, content);
         primaryStage.setScene(new Scene(root, SCENE_WIDTH, SCENE_HEIGHT));
-        GameAudio.playMusic("winscreen");
+        Game_Audio.playMusic("winscreen");
     }
 
-    // Main method, uygulamayı launch eder.
+    // Main method, uygulamayi launch eder.
     public static void main(String[] args) {
         launch(args);
     }

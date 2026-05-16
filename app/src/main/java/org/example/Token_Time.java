@@ -1,6 +1,6 @@
 // CSE 1242 - Term Project
 //MuctebaEnes_Kapusuz_150124083
-// Class: Token_Time - süreye 10 saniye ekleyen token, her 5 kill'de spawn olur.
+// Class: Token_Time - sureye 10 saniye ekleyen token, her 5 kill'de spawn olur.
 
 package org.example;
 
@@ -10,19 +10,19 @@ import javafx.scene.shape.Rectangle;
 
 public class Token_Time extends Token {
 
-    // Time token'ın görselini oluşturur (saat şeklinde).
+    // Time token'in görselini olusturur (saat seklinde).
     public Token_Time(double x, double y) {
         super(x, y);
-        Circle clockFace = new Circle(0, 0, 14, Color.WHITE);
-        clockFace.setStroke(Color.BLACK);
+        Circle clockFace = new Circle(0, 0, 14, Color.web("#F7F7F7"));
+        clockFace.setStroke(Color.web("#1C1C1C"));
         clockFace.setStrokeWidth(2.5);
         // minute hand: pointing to 12, straight up
         Rectangle minuteHand = new Rectangle(-1, -10, 2, 10);
-        minuteHand.setFill(Color.BLACK);
+        minuteHand.setFill(Color.web("#1C1C1C"));
         // hour hand: pointing to 3, straight right
         Rectangle hourHand = new Rectangle(0, -1.5, 6, 3);
-        hourHand.setFill(Color.BLACK);
-        Circle clockCenter = new Circle(0, 0, 1.5, Color.BLACK);
+        hourHand.setFill(Color.web("#1C1C1C"));
+        Circle clockCenter = new Circle(0, 0, 1.5, Color.web("#1C1C1C"));
         view.getChildren().addAll(clockFace, minuteHand, hourHand, clockCenter);
     }
 
@@ -30,6 +30,6 @@ public class Token_Time extends Token {
     @Override
     public void apply(GamePane game) {
         game.remainingSeconds += 10;
-        GameAudio.play("time");
+        Game_Audio.play("time");
     }
 }

@@ -1,6 +1,6 @@
 // CSE 1242 - Term Project
 //MuctebaEnes_Kapusuz_150124083
-// Class: GameAudio - sound effect ve müzik dosyalarını yükler ve çalar.
+// Class: Game_Audio - sound effect ve muzik dosyalarini yukler ve calar.
 
 package org.example;
 
@@ -11,7 +11,7 @@ import javafx.scene.media.AudioClip;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 
-public class GameAudio {
+public class Game_Audio {
 
     private static final Map<String, AudioClip> clips = new HashMap<>();
     private static MediaPlayer vacuumPlayer;
@@ -19,7 +19,7 @@ public class GameAudio {
     private static MediaPlayer musicPlayer;
     private static Class<?> appClass;
 
-    // Tüm sound effect ve müzik dosyalarını load eder.
+    // Tum sound effect ve muzik dosyalarini load eder.
     public static void load(Class<?> ctx) {
         appClass = ctx;
 
@@ -33,7 +33,6 @@ public class GameAudio {
         }
 
         try {
-
             var vacUrl = ctx.getResource("/sounds/vacuum_effect.mp3");
             if (vacUrl != null) {
                 vacuumPlayer = new MediaPlayer(new Media(vacUrl.toExternalForm()));
@@ -50,7 +49,7 @@ public class GameAudio {
         } catch (Exception ignored) {}
     }
 
-    // Background müziği değiştirir ve çalar, varsa önce eskisini durdurur.
+    // Background muzigi degistirir ve calar, varsa once eskisini durdurur.
     public static void playMusic(String name) {
         if (appClass == null) return;
         if (musicPlayer != null) {
@@ -68,14 +67,13 @@ public class GameAudio {
         } catch (Exception ignored) {}
     }
 
-    // Verilen isimle AudioClip'i çalar.
+    // Verilen isimle AudioClip'i calar.
     public static void play(String name) {
-
         AudioClip clip = clips.get(name);
         if (clip != null) clip.play();
     }
 
-    // Vacuum ses efektini başlatır.
+    // Vacuum ses efektini baslatir.
     public static void startVacuum() {
         if (vacuumPlayer != null && vacuumPlayer.getStatus() != MediaPlayer.Status.PLAYING) {
             vacuumPlayer.play();
@@ -87,7 +85,7 @@ public class GameAudio {
         if (vacuumPlayer != null) vacuumPlayer.stop();
     }
 
-    // Damage ses efektini başlatır.
+    // Damage ses efektini baslatir.
     public static void startDamage() {
         if (damagePlayer != null && damagePlayer.getStatus() != MediaPlayer.Status.PLAYING) {
             damagePlayer.play();

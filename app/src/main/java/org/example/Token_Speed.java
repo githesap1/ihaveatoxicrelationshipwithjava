@@ -1,6 +1,6 @@
 // CSE 1242 - Term Project
 //MuctebaEnes_Kapusuz_150124083
-// Class: Token_Speed - player'a geçici speed boost veren token.
+// Class: Token_Speed - player'a gecici speed boost veren token.
 
 package org.example;
 
@@ -10,7 +10,7 @@ import javafx.scene.shape.Rectangle;
 
 public class Token_Speed extends Token {
 
-    // Speed token'ın görselini oluşturur.
+    // Speed token'in görselini olusturur.
     public Token_Speed(double x, double y) {
         super(x, y);
         Rectangle bg = new Rectangle(-12, -12, 24, 24);
@@ -18,11 +18,11 @@ public class Token_Speed extends Token {
 
         // lower triangle (pointing up)
         Polygon lower = new Polygon(-7.0, 3.0, 7.0, 3.0, 0.0, -3.0);
-        lower.setFill(Color.BLACK);
+        lower.setFill(Color.web("#1C1C1C"));
 
         // upper triangle (pointing up, just above the lower one)
         Polygon upper = new Polygon(-7.0, -3.0, 7.0, -3.0, 0.0, -9.0);
-        upper.setFill(Color.BLACK);
+        upper.setFill(Color.web("#1C1C1C"));
 
         view.getChildren().addAll(bg, lower, upper);
     }
@@ -32,6 +32,6 @@ public class Token_Speed extends Token {
     public void apply(GamePane game) {
         double duration = game.config.speedTokenDuration > 0 ? game.config.speedTokenDuration : 6;
         game.speedBoostRemaining = Math.max(game.speedBoostRemaining, duration);
-        GameAudio.play("speed");
+        Game_Audio.play("speed");
     }
 }

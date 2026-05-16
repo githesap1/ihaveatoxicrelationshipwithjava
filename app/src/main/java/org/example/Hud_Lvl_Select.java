@@ -1,6 +1,6 @@
 // CSE 1242 - Term Project
 //MuctebaEnes_Kapusuz_150124083
-// Class: Hud_Lvl_Select - level select ekranı.
+// Class: Hud_Lvl_Select - level select ekrani.
 
 package org.example;
 
@@ -18,7 +18,7 @@ import javafx.scene.shape.Rectangle;
 
 public class Hud_Lvl_Select extends Hud {
 
-    // Level select ekranını oluşturur.
+    // Level select ekranini olusturur.
     public Hud_Lvl_Select(App app, double width, double height) {
         ImageView bg = loadBg("/images/menu2.jpg", width, height);
 
@@ -46,7 +46,7 @@ public class Hud_Lvl_Select extends Hud {
         setPrefSize(width, height);
     }
 
-    // Bir level için tıklanabilir preview kartı oluşturur.
+    // Bir level icin tiklanabilir preview karti olusturur.
     private VBox buildLevelCard(int levelNumber, App app) {
         ImageView preview = new ImageView(
             new Image(getClass().getResourceAsStream("/images/level" + levelNumber + ".jpg"))
@@ -77,14 +77,14 @@ public class Hud_Lvl_Select extends Hud {
             text.setStyle("-fx-text-fill: white; -fx-font-size: 22px; -fx-font-family: 'Ghostz'; -fx-font-weight: bold;");
         });
         imgPane.setOnMousePressed(e -> {
-            border.setStroke(Color.RED);
+            border.setStroke(Color.web("#EF233C"));
             text.setStyle("-fx-text-fill: red; -fx-font-size: 22px; -fx-font-family: 'Ghostz'; -fx-font-weight: bold;");
         });
         imgPane.setOnMouseReleased(e -> {
             border.setStroke(Color.web("#2C2C2C"));
             text.setStyle("-fx-text-fill: white; -fx-font-size: 22px; -fx-font-family: 'Ghostz'; -fx-font-weight: bold;");
             if (imgPane.isHover()) {
-                GameAudio.play("select");
+                Game_Audio.play("select");
                 app.startLevel(levelNumber, 0);
             }
         });

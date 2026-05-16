@@ -1,6 +1,6 @@
 // CSE 1242 - Term Project
 //MuctebaEnes_Kapusuz_150124083
-// Class: Config - config.txt'den oyun ayarlarını okur ve depolar.
+// Class: Config - config.txt'den oyun ayarlarini okur ve depolar.
 
 package org.example;
 
@@ -49,10 +49,10 @@ public class Config {
     public int eyeTokenDuration;
     public int speedTokenDuration;
 
-    // Private constructor, dışarıdan new Config() yapılamaz.
+    // Private constructor, disaridan new Config() yapilamaz.
     private Config() {}
 
-    // config.txt'zi okuzup compile eder, field'ları doldurur.
+    // config.txt'zi okuzup compile eder, field'lari doldurur.
     public static Config load(File file) throws IOException {
         Config config = new Config();
         BufferedReader reader = new BufferedReader(new FileReader(file));

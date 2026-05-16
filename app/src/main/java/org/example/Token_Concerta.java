@@ -10,7 +10,7 @@ import javafx.scene.shape.Rectangle;
 
 public class Token_Concerta extends Token {
 
-    // Concerta token'ının görselini oluşturur (hap şeklinde).
+    // Concerta token'inin görselini olusturur (hap seklinde).
     public Token_Concerta(double x, double y) {
         super(x, y);
         Rectangle pill = new Rectangle(-14, -5, 28, 10);
@@ -18,7 +18,7 @@ public class Token_Concerta extends Token {
         pill.setArcWidth(10);
         pill.setArcHeight(10);
         pill.setStroke(Color.web("#5C3D2E"));
-        Circle dot = new Circle(0, 0, 3, Color.WHITE);
+        Circle dot = new Circle(0, 0, 3, Color.web("#F7F7F7"));
         view.getChildren().addAll(pill, dot);
     }
 
@@ -28,7 +28,7 @@ public class Token_Concerta extends Token {
         game.concertaSpeedRemaining = 27;
         game.concertaHealRemaining = 15;
         game.concertaMusicPlaying = true;
-        GameAudio.play("concerta");
-        GameAudio.playMusic("concerta_music");
+        Game_Audio.play("concerta");
+        Game_Audio.playMusic("concerta_music");
     }
 }

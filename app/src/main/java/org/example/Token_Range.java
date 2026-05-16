@@ -1,6 +1,6 @@
 // CSE 1242 - Term Project
 //MuctebaEnes_Kapusuz_150124083
-// Class: Token_Range - scanner menzilini artıran token.
+// Class: Token_Range - scanner menzilini artiran token.
 
 package org.example;
 
@@ -9,7 +9,7 @@ import javafx.scene.shape.Polygon;
 
 public class Token_Range extends Token {
 
-    // Range token'ın görselini oluşturur.
+    // Range token'in görselini olusturur.
     public Token_Range(double x, double y) {
         super(x, y);
         Polygon triangle = new Polygon(
@@ -17,8 +17,9 @@ public class Token_Range extends Token {
                 13.0, 12.0,
                 -13.0, 12.0
         );
-        triangle.setFill(Color.PURPLE);
-        triangle.setStroke(Color.WHITE);
+        triangle.setFill(Color.web("#4B0082"));
+        triangle.setStroke(Color.web("#DDA0DD"));
+        triangle.setStrokeWidth(2.5);
         view.getChildren().add(triangle);
     }
 
@@ -27,6 +28,6 @@ public class Token_Range extends Token {
     public void apply(GamePane game) {
         double amount = game.config.vacuumTokenIncrease > 0 ? game.config.vacuumTokenIncrease : 20;
         game.scannerHalfWidth += amount;
-        GameAudio.play("range");
+        Game_Audio.play("range");
     }
 }

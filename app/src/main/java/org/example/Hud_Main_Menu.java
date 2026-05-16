@@ -1,6 +1,6 @@
 // CSE 1242 - Term Project
 //MuctebaEnes_Kapusuz_150124083
-// Class: Hud_Main_Menu - main menu ekranı.
+// Class: Hud_Main_Menu - main menu ekrani.
 
 package org.example;
 
@@ -15,7 +15,7 @@ import javafx.scene.shape.Rectangle;
 
 public class Hud_Main_Menu extends Hud {
 
-    // Main menu ekranını oluşturur.
+    // Main menu ekranini olusturur.
     public Hud_Main_Menu(App app, double width, double height) {
         ImageView wallpaper = loadBg("/images/menu.jpg", width, height);
 

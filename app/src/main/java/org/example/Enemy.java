@@ -1,6 +1,6 @@
 // CSE 1242 - Term Project
 //MuctebaEnes_Kapusuz_150124083
-// Class: Enemy - tüm enemz'ler için abstract base class.
+// Class: Enemy - tum enemz'ler icin abstract base class.
 
 package org.example;
 
@@ -30,7 +30,7 @@ public abstract class Enemy {
     private double baseRadius;
     private double radius;
 
-    // Enemy'nin tüm field'larını set eder.
+    // Enemy'nin tum field'larini set eder.
     protected Enemy(
             int type,
             Group view,
@@ -57,7 +57,7 @@ public abstract class Enemy {
 
     }
 
-    // Group'u enemy pozisyonuna ve mevcut scale'ine göre yerleştirir.
+    // Group'u enemy pozisyonuna ve mevcut scale'ine göre yerlestirir.
     public void updatePosition() {
         double scale = radius / baseRadius;
         view.setLayoutX(x);
@@ -66,7 +66,7 @@ public abstract class Enemy {
         view.setScaleY(scale);
     }
 
-    // Scanner içindeyken enemy body ve detail'lerini griye boyar.
+    // Scanner icindeyken enemy body ve detail'lerini griye boyar.
     public void inZone() {
         body.setFill(Color.rgb(230, 230, 230, 0.90));
         for (Circle detail : details) {
@@ -74,13 +74,13 @@ public abstract class Enemy {
         }
     }
 
-    // Enemy scanner dışına çıkınca normal rengine döner.
+    // Enemy scanner disina cikinca normal rengine döner.
     public abstract void outOfZone();
 
-    // Bu enemy type'ının puan değerini döner.
+    // Bu enemy type'inin puan degerini döner.
     public abstract int getScoreValue();
 
-    // Animation varsa durdurur, yoksa bir şey yapmaz.
+    // Animation varsa durdurur, yoksa bir sey yapmaz.
     public void stopAnimation() {}
 
     public int getType() {
@@ -155,11 +155,11 @@ public abstract class Enemy {
         this.radius = radius;
     }
 
-    // Verilen tzpe'ta random pozisyonda enemz oluşturup döner.
+    // Verilen tzpe'ta random pozisyonda enemz olusturup döner.
     public static Enemy spawn(int type, double areaX, double areaY,
                               double areaW, double areaH, Random random) {
 
-        System.out.println("enemy spawn ediliyor, type: " + type);
+        if (type == GHOST) System.out.println("enemy spawned");
         double baseRadius, minSpeed, maxSpeed;
         Color bodyColor;
 
@@ -184,7 +184,7 @@ public abstract class Enemy {
         Group view = new Group();
         Circle body = new Circle(0, 0, baseRadius);
         body.setFill(bodyColor);
-        body.setStroke(Color.BLACK);
+        body.setStroke(Color.web("#1C1C1C"));
 
         ArrayList<Circle> details = new ArrayList<>();
         ArrayList<Circle> ghostBumps = new ArrayList<>();
@@ -218,10 +218,10 @@ public abstract class Enemy {
                 star.getPoints().addAll(Math.cos(ang) * r, Math.sin(ang) * r);
             }
             star.setFill(bodyColor);
-            star.setStroke(Color.BLACK);
+            star.setStroke(Color.web("#1C1C1C"));
 
-            Circle eye1 = new Circle(-4, -3, 3, Color.BLACK);
-            Circle eye2 = new Circle(4,  -3, 3, Color.BLACK);
+            Circle eye1 = new Circle(-4, -3, 3, Color.web("#1C1C1C"));
+            Circle eye2 = new Circle(4,  -3, 3, Color.web("#1C1C1C"));
             details.add(eye1);
             details.add(eye2);
 
@@ -242,7 +242,7 @@ public abstract class Enemy {
                 double sinA = Math.sin(ang);
                 double tangX = -sinA; // tangent direction
                 double tangY =  cosA;
-                // üçgenleri elle yerleştirmeye çalıştım ama dönerken bozuluyordu, ai'a yaptırdım
+                // ucgenleri elle yerlestirmeye calistim ama dönerken bozuluyordu, ai'a yaptirdim
                 double cx = cosA * orbitR;
                 double cy = sinA * orbitR;
                 double tipX = cx + tangX * tipOff;
@@ -256,10 +256,10 @@ public abstract class Enemy {
                 orbitGroup.getChildren().add(tri);
             }
 
-            Circle eye1 = new Circle(-6, -5, 4, Color.WHITE);
-            Circle eye2 = new Circle(6,  -5, 4, Color.WHITE);
-            Circle pupil1 = new Circle(-6, -5, 2, Color.BLACK);
-            Circle pupil2 = new Circle(6,  -5, 2, Color.BLACK);
+            Circle eye1 = new Circle(-6, -5, 4, Color.web("#F7F7F7"));
+            Circle eye2 = new Circle(6,  -5, 4, Color.web("#F7F7F7"));
+            Circle pupil1 = new Circle(-6, -5, 2, Color.web("#1C1C1C"));
+            Circle pupil2 = new Circle(6,  -5, 2, Color.web("#1C1C1C"));
             details.add(eye1);
             details.add(eye2);
 
